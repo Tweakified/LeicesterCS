@@ -1,0 +1,11 @@
+name: leicestercs
+
+services:
+  leicestercs:
+    build: .
+    container_name: leicestercs
+    restart: always
+    volumes:
+      - .:/app
+    env_file:
+      - .env
