@@ -1,9 +1,9 @@
-import discord
 import asyncio
+from json import load
+
+import discord
 from discord import app_commands
 from discord.ext import commands
-
-from json import load
 
 from modules.enums import FileLocations
 
@@ -29,9 +29,10 @@ class Tutorials(discord.ui.View):
         options=[
             discord.SelectOption(
                 label=code,
-                description=module["description"],
+                description=module.get("description", None),
+                emoji=module.get("emoji", modules.get("WIP", {}).get("emoji", None)),
             )
-            for code, module in modules.items()
+            for code, module in modules.items() if code != "WIP"
         ],
     )
     async def on_select(
@@ -42,14 +43,16 @@ class Tutorials(discord.ui.View):
             description="Here are some helpful tutorials/materials for this module",
             color=discord.Color.random(),
         )
-        embed_data = modules.get(select.values[0], modules["CO1108"])
-        embed.set_image(url=embed_data["image"])
-        for field in embed_data["fields"]:
-            embed.add_field(name=field["name"], value=field["value"], inline=True)
+        embed_data = modules.get(select.values[0], {})
+        embed.set_image(url=embed_data.get("image"))
+        for field in embed_data.get("fields", modules.get("WIP", {}).get("fields", [])):
+            embed.add_field(name=field.get("name", ""), value=field.get("value", ""), inline=True)
 
-        authors = make_human_readable_list(embed_data["authors"])
+        authors = make_human_readable_list(embed_data.get("authors", []))
 
-        embed.set_footer(text=f"Tutorial resources created by: {authors}")
+        if authors:
+            embed.set_footer(text=f"Tutorial resources created by: {authors}")
+
         await interaction.response.defer()
         user = interaction.user
         await user.send(embed=embed)
@@ -71,7 +74,7 @@ class TutorialCog(commands.Cog):
         await interaction.followup.send(
             "Select a module from the dropdown below:", view=Tutorials(), ephemeral=True
         )
-        await asyncio.sleep(15)
+        await asyncio.sleep(30)
         await interaction.delete_original_response()
 
 

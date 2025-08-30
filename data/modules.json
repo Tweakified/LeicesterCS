@@ -1,7 +1,18 @@
 {
+    "WIP": {
+      "fields": [
+        {"name": "Theory",
+         "value": "WIP! If you find any resources that would be helpful, please reach out!"}
+      ],
+      "emoji": "🛠️"
+    },
+    "CO1101": {
+        "description": "Computing Fundamentals (WIP)"
+    },
     "CO1102": {
         "description": "Python Fundamentals",
         "image": "https://cdn.freebiesupply.com/logos/large/2x/python-5-logo-png-transparent.png",
+        "emoji": "\uD83D\uDC0D",
         "fields": [
             {"name": "Week 1",
              "value": "[Playlist](https://youtube.com/playlist?list=PLeVt6bfkArKeUHaPvDZIONynfnj3oyN5Y&si=5bIoxejRgdAEYoam)"},
@@ -26,9 +37,16 @@
         ],
       "authors": ["kaeini"]
     },
+    "CO1103": {
+        "description": "Maths Fundamentals (WIP)"
+    },
+    "CO1104": {
+        "description": "Computer Architecture (WIP)"
+    },
     "CO1105": {
         "description": "Object Oriented Programming",
         "image": "https://cdn.freebiesupply.com/logos/large/2x/java-logo-png-transparent.png",
+        "emoji": "☕",
         "fields": [
             {"name": "Java Basics",
              "value": "[Link](https://www.codecademy.com/learn/java-introduction)"},
@@ -42,6 +60,7 @@
     "CO1106": {
         "description": "Requirements Engineering",
         "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Git_icon.svg/2048px-Git_icon.svg.png",
+        "emoji": "\uD83D\uDCDD",
         "fields": [
             {"name": "Git",
              "value": "[Cheatsheet](https://education.github.com/git-cheat-sheet-education.pdf)"}
@@ -51,6 +70,7 @@
     "CO1107": {
         "description": "Python Programming & Algorithms",
         "image": "https://cdn.freebiesupply.com/logos/large/2x/python-5-logo-png-transparent.png",
+        "emoji": "\uD83C\uDF32",
         "fields": [
             {"name": "Week 2",
              "value": "[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKciyZXBQB4v48Z2ccA7L3El)"},
@@ -70,17 +90,17 @@
         "authors": ["kaeini"]
     },
     "CO1108": {
-        "description": "Foundations of Computation",
+        "description": "Foundations of Computation (WIP)",
         "image": "https://cms-media.bartleby.com/wp-content/uploads/sites/2/2021/05/31175359/Theoretical-Computer-Science-1-1024x389.jpg",
-        "fields": [
-            {"name": "Theory",
-             "value": "WIP! If you find any resources that would be helpful. Please reach out!"}
-        ],
         "authors": ["kaeini"]
+    },
+    "CO1109": {
+        "description": "Business and Financial Computing (WIP)"
     },
     "CO2101": {
         "description": "Operating Systems and Networking",
         "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/1200px-Tux.svg.png",
+        "emoji": "\uD83E\uDE9F",
         "fields": [
             {"name": "Anki Flashcards 1.1-5.1",
              "value": "[Flashcards](https://ankiweb.net/shared/info/127297956)"},
@@ -92,6 +112,7 @@
     "CO2102": {
         "description": "Databases & Domain Modelling",
         "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Sql_data_base_with_logo.png/640px-Sql_data_base_with_logo.png",
+        "emoji": "\uD83D\uDCBE",
         "fields": [
             {"name": "Week 1",
              "value": "[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKcDa27fwSMqOb7_LnAMeAOI)"},
@@ -100,22 +121,42 @@
         ],
         "authors": ["kaeini"]
     },
+    "CO2104": {
+        "description": "UI Design and Evaluation (WIP)"
+    },
+    "CO2106": {
+        "description": "Data Analytics (WIP)"
+    },
+    "CO2113": {
+        "description": "Entertainment Technology (WIP)"
+    },
+    "CO2114": {
+        "description": "Foundations of AI (WIP)"
+    },
+    "CO2123": {
+        "description": "Software Architecture and System Development I (WIP)"
+    },
+    "CO2124": {
+        "description": "Software Architecture and System Development II",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Spring_Boot.svg/220px-Spring_Boot.svg.png",
+        "emoji": "\uD83C\uDFD7\uFE0F",
+        "fields": [
+            {"name": "Anki Flashcards",
+             "value": "[Theory Flashcards](https://ankiweb.net/shared/info/1672898699)"}
+        ],
+        "authors": ["kaeini"]
+    },
     "CO2301": {
         "description": "Project Management",
         "image": "https://static.thenounproject.com/png/3475197-200.png",
+        "emoji": "\uD83D\uDDD3\uFE0F",
         "fields": [
             {"name": "Anki Flashcards",
              "value": "[Flashcards](https://ankiweb.net/shared/info/203905190)"}
         ],
         "authors": ["kaeini"]
     },
-    "CO2124": {
-        "description": "Software Architecture and System Development II",
-        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Spring_Boot.svg/220px-Spring_Boot.svg.png",
-        "fields": [
-            {"name": "Anki Flashcards",
-             "value": "[Theory Flashcards](https://ankiweb.net/shared/info/1672898699)"}
-        ],
-        "authors": ["kaeini"]
+    "CO2302": {
+        "description": "Software Engineering Group Project (WIP)"
     }
 }
