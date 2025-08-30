@@ -3,6 +3,20 @@ import asyncio
 from discord import app_commands
 from discord.ext import commands
 
+from json import load
+
+from modules.enums import FileLocations
+
+with open(FileLocations.Modules.value, mode="r", encoding="utf-8") as f:
+    modules = load(f)
+
+def make_human_readable_list(items: list[str]) -> str:
+    if len(items) == 0:
+        return ""
+    elif len(items) == 1:
+        return items[0]
+    else:
+        return ", ".join(items[:-1]) + " and " + items[-1]
 
 class Tutorials(discord.ui.View):
     def __init__(self):
@@ -13,30 +27,11 @@ class Tutorials(discord.ui.View):
         min_values=1,
         max_values=1,
         options=[
-            discord.SelectOption(label="CO1102", description="Python Fundamentals"),
             discord.SelectOption(
-                label="CO1105", description="Object Oriented Programming"
-            ),
-            discord.SelectOption(
-                label="CO1106", description="Requirements Engineering"
-            ),
-            discord.SelectOption(
-                label="CO1107", description="Python Programming & Algorithms"
-            ),
-            discord.SelectOption(
-                label="CO1108", description="Foundations of Computation"
-            ),
-            discord.SelectOption(
-                label="CO2101", description="Operating Systems and Networking"
-            ),
-            discord.SelectOption(
-                label="CO2102", description="Databases & Domain Modelling"
-            ),
-            discord.SelectOption(label="CO2301", description="Project Management"),
-            discord.SelectOption(
-                label="CO2124",
-                description="Software Architecture and System Development II",
-            ),
+                label=code,
+                description=module["description"],
+            )
+            for code, module in modules.items()
         ],
     )
     async def on_select(
@@ -47,178 +42,14 @@ class Tutorials(discord.ui.View):
             description="Here are some helpful tutorials/materials for this module",
             color=discord.Color.random(),
         )
-        if select.values[0] == "CO1102":
-            embed.set_image(
-                url="https://cdn.freebiesupply.com/logos/large/2x/python-5-logo-png-transparent.png"
-            )
-            embed.add_field(
-                name="Week 1",
-                value="[Playlist](https://youtube.com/playlist?list=PLeVt6bfkArKeUHaPvDZIONynfnj3oyN5Y&si=5bIoxejRgdAEYoam)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 2",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKcWE9I9wZvv4Bbyd4e0Nvst)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 3",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKcLNCjLF0wUfWsoH64CtTfh&jct=ODlb5FmGrOHWXxwV4QyV3A)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 4",
-                value="[Playlist](https://youtube.com/playlist?list=PLeVt6bfkArKdmYvuMkYPaP3eeLpq6OPGt&si=5puLw5u2ZjhFC17T)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 5",
-                value="[Video](https://youtu.be/621C1FvvcCc?list=PLeVt6bfkArKc9GvP81JdNMw6j4K1BmttN)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 6",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKcLBDRLl6ZsJ0ans5C-rSHr)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 7",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKdTo7GTqxO-kXXqhrRivXL9)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 8",
-                value="[Playlist](https://youtube.com/playlist?list=PLeVt6bfkArKfPpT1z_fE9PJZrF6Afwc4o&si=0zOi6YwAhKWBtS0W)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 9",
-                value="[Video](https://youtu.be/q2SGW2VgwAM?si=VDlPbv59jsc8M3TM)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 10",
-                value="[Playlist](https://youtube.com/playlist?list=PLeVt6bfkArKfLRcApQxz69y_q-lpS9HbK&si=bW5sysAnl7ewuvkL)",
-                inline=True,
-            )
-        elif select.values[0] == "CO1105":
-            embed.set_image(
-                url="https://cdn.freebiesupply.com/logos/large/2x/java-logo-png-transparent.png"
-            )
-            embed.add_field(
-                name="Java Basics",
-                value="[Link](https://www.codecademy.com/learn/java-introduction)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Introduction to OOP",
-                value="[Link](https://www.codecademy.com/learn/learn-java-object-oriented-programming)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Inheritance & Polymorphism",
-                value="[Link](https://www.codecademy.com/learn/learn-java-classes-and-methods)",
-                inline=True,
-            )
-        elif select.values[0] == "CO1106":
-            embed.set_image(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Git_icon.svg/2048px-Git_icon.svg.png"
-            )
-            embed.add_field(
-                name="Git",
-                value="[Cheatsheet](https://education.github.com/git-cheat-sheet-education.pdf)",
-                inline=True,
-            )
-        elif select.values[0] == "CO1107":
-            embed.set_image(
-                url="https://cdn.freebiesupply.com/logos/large/2x/python-5-logo-png-transparent.png"
-            )
-            embed.add_field(
-                name="Week 2",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKciyZXBQB4v48Z2ccA7L3El)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 3",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKdRvReeiigILJWhfepMHt6H)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 4",
-                value="[Video](https://youtu.be/m1Fjdnj_Mds)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 5",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKcKV42o5N8ITcGxnPCjCHdH)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 6",
-                value="[Video](https://youtu.be/JlMyYuY1aXU)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 7",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKdPM_kC0PWwlaG2-HswSa0g)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Week 8",
-                value="[Video](https://youtu.be/oSWTXtMglKE)",
-                inline=True,
-            )
-        elif select.values[0] == "CO2101":
-            embed.set_image(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Tux.svg/1200px-Tux.svg.png"
-            )
-            embed.add_field(
-                name="Anki Flashcards 1.1-5.1",
-                value="[Flashcards](https://ankiweb.net/shared/info/127297956)",
-                inline=True,
-            )
-            embed.add_field(
-                name="Anki Flashcards 5.2-...",
-                value="[Flashcards](https://ankiweb.net/shared/info/248961491)",
-                inline=True,
-            )
-        elif select.values[0] == "CO2102":
-            embed.set_image(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Sql_data_base_with_logo.png/640px-Sql_data_base_with_logo.png"
-            )
-            embed.add_field(
-                name="Week 1",
-                value="[Playlist](https://www.youtube.com/playlist?list=PLeVt6bfkArKcDa27fwSMqOb7_LnAMeAOI)",
-            )
-            embed.add_field(
-                name="Anki Flashcards",
-                value="[Flashcards](https://ankiweb.net/shared/info/975442831)",
-                inline=True,
-            )
-        elif select.values[0] == "CO2301":
-            embed.set_image(url="https://static.thenounproject.com/png/3475197-200.png")
-            embed.add_field(
-                name="Anki Flashcards",
-                value="[Flashcards](https://ankiweb.net/shared/info/203905190)",
-            )
-        elif select.values[0] == "CO2124":
-            embed.set_image(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Spring_Boot.svg/220px-Spring_Boot.svg.png"
-            )
-            embed.add_field(
-                name="Anki Flashcards",
-                value="[Theory Flashcards](https://ankiweb.net/shared/info/1672898699)",
-            )
-        else:
-            embed.set_image(
-                url="https://cms-media.bartleby.com/wp-content/uploads/sites/2/2021/05/31175359/Theoretical-Computer-Science-1-1024x389.jpg"
-            )
-            embed.add_field(
-                name="Theory",
-                value="WIP! If you find any resources that would be helpful. Please reach out!",
-                inline=True,
-            )
-        embed.set_footer(text="Tutorial resources created by: kaeini")
+        embed_data = modules.get(select.values[0], modules["CO1108"])
+        embed.set_image(url=embed_data["image"])
+        for field in embed_data["fields"]:
+            embed.add_field(name=field["name"], value=field["value"], inline=True)
+
+        authors = make_human_readable_list(embed_data["authors"])
+
+        embed.set_footer(text=f"Tutorial resources created by: {authors}")
         await interaction.response.defer()
         user = interaction.user
         await user.send(embed=embed)
