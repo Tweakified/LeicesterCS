@@ -13,26 +13,46 @@ A custom Discord bot for the Leicester Computer Science Society, providing verif
 
 ## Setup
 
-1. **Fork the repository**
+Follow these steps to get the project running locally:
 
-2. **Clone the repository:**
-    ```
-    git clone <repo-url>
-    cd LeicesterCS
-    ```
+1. **Fork this repository**
+   Click the **Fork** button on the top right of this page to create your own copy.
 
-3. **Install dependencies:**
-    ```
-    pip install -r requirements.txt
-    ```
+2. **Clone your fork**
+   Replace `<your-username>` with your GitHub username:
 
-4. **Configure environment variables:**
+   ```bash
+   git clone https://github.com/<your-username>/LeicesterCS.git
+   cd LeicesterCS
+   ```
 
-    Copy .env.example to .env and fill in your Discord token, Mailjet keys, Trello keys, and other relevant keys. Please note only some keys are required for the bot to function.
+3. **(Optional but recommended) Create a virtual environment**
+
+   ```bash
+   python -m venv venv
+   source venv/bin/activate   # On macOS/Linux
+   venv\Scripts\activate      # On Windows
+   ```
+
+4. **Install dependencies**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Set up environment variables**
+   Copy the example file and fill in your own values:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Edit `.env` to include your own env vars (API keys, tokens, etc.).
    LeicesterCS Trello: https://trello.com/b/VMehvbV5/leicester-cs
 
-6. **Run the bot:**
-    ```
+7. **Run the project**
+
+    ```bash
     python bot.py
     ```
     Or use Docker:
@@ -49,12 +69,22 @@ A custom Discord bot for the Leicester Computer Science Society, providing verif
 - **Dockerfile & docker-compose.yaml** — Containerisation support.
 
 ## Contributing
-Pull requests are welcome! Please follow the Apache 2.0 License.
-Please run ruff check and ruff format before pushing your code.
-    
+
+Pull requests are welcome! Before opening a PR, Create a feature branch:
+
+    git checkout -b feature/my-feature
+
+Before commiting, run formatting and linting checks (using ruff):
+
     pip install ruff
     python -m ruff check
     python -m ruff format
+
+Commit & push your changes:
+
+    git commit -m "Add my feature"
+    git push origin feature/my-feature
+Open a Pull Request!
 
 ## License
 This project is licensed under the Apache License 2.0. See LICENSE for details.
