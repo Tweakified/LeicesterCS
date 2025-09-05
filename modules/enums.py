@@ -10,7 +10,7 @@ load_dotenv()
 
 
 class Guild(Enum):
-    LeicesterCS = 939530345248874496
+    LeicesterCS = int(os.getenv("LEICESTER_CS_ID", 939530345248874496)) # Optionally use a different guild ID for testing
 
 
 class Roles(Enum):
@@ -22,8 +22,8 @@ class Roles(Enum):
 
 
 class _guildChannels(Enum):
-    Announcements = 939530345693450331
-    RoleAssign = 939540767611957279
+    Announcements = int(os.getenv("ANNOUNCEMENTS_CHANNEL_ID", 939530345693450331)) # Optionally use a different channel ID for testing
+    RoleAssign = 939540767611957279 # role assign channel is not used in newer versions of discord.
 
 
 class GuildChannels(Enum):
@@ -34,6 +34,7 @@ class GuildChannels(Enum):
 
 class FileLocations(Enum):
     UpTime = os.path.join(BASE_DIR, "..", "uptime.json")
+    Modules = os.path.join(BASE_DIR, "..", "data", "modules.json")
 
 
 # COLOURS (HEX)

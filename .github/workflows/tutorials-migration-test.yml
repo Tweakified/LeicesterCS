@@ -1,0 +1,47 @@
+name: Tutorials Migration Test
+
+on:
+    workflow_dispatch:
+        inputs:
+          old_version:
+              description: 'Old version (branch, tag, or full commit SHA)'
+              required: true
+              default: 'hard_coded_tutorials'
+          new_version:
+              description: 'New version (branch, tag, or full commit SHA)'
+              required: true
+              default: 'migrated_tutorials'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Checkout old version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.old_version }}
+          path: old
+          fetch-depth: 0
+
+      - name: Checkout new version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.new_version }}
+          path: new
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+            python -m pip install --upgrade pip
+            pip install -r new/requirements.txt
+            pip install -r new/tests/requirements.txt
+
+      - name: Run parallel tests
+        run: |
+            PYTHONPATH=. pytest -s -v --disable-warnings new/tests/parallel
