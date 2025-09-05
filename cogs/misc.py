@@ -30,6 +30,11 @@ class Misc(commands.Cog):
             value="Kieran `President` <@514100882661572619>\nNauman `Treasurer` <@1169668330567766169>\nKaranveer `Wellbeing` <@755453886248255719>\nSwayam `Social Sec` <@671774120131821648>\nJacinta `Publicity` <@993198933390151770>\nNeha `Publicity` <@1337718703290060812>\nShreya `Events Co-ordinator` <@1337738846095282199>\nPushkar `Sports Ambassador` <@649605009025007656>",
             inline=False,
         )
+        embed.add_field(
+            name="Contributions",
+            value="Want to contribute to the bot? Check out the [GitHub repository](https://github.com/Tweakified/LeicesterCS) to get started.",
+            inline=False,
+        )
         await interaction.response.send_message(embed=embed)
 
     @app_commands.command(name="social", description="Official social channels")
