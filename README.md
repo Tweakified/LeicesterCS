@@ -29,8 +29,9 @@ A custom Discord bot for the Leicester Computer Science Society, providing verif
 4. **Configure environment variables:**
 
     Copy .env.example to .env and fill in your Discord token, Mailjet keys, Trello keys, and other relevant keys. Please note only some keys are required for the bot to function.
+   LeicesterCS Trello: https://trello.com/b/VMehvbV5/leicester-cs
 
-5. **Run the bot:**
+6. **Run the bot:**
     ```
     python bot.py
     ```
