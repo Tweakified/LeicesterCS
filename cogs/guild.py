@@ -7,8 +7,13 @@ from trello import TrelloApi
 # Custom modules
 from modules import enums
 
-trello = TrelloApi(os.getenv("TRELLO_KEY"))
-trello.set_token(os.getenv("TRELLO_TOKEN"))
+trello_key = os.getenv("TRELLO_KEY")
+trello_token = os.getenv("TRELLO_TOKEN")
+
+trello = None
+if trello_key and trello_token:
+    trello = TrelloApi(trello_key)
+    trello.set_token(trello_token)
 
 
 class Guild(commands.Cog):
