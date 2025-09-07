@@ -10,9 +10,7 @@ load_dotenv()
 
 
 class Guild(Enum):
-    LeicesterCS = int(
-        os.getenv("LEICESTER_CS_ID", 939530345248874496)
-    )  # Optionally use a different guild ID for testing
+    LeicesterCS = int(os.getenv("LEICESTER_CS_ID"))
 
 
 class Roles(Enum):
@@ -24,9 +22,7 @@ class Roles(Enum):
 
 
 class _guildChannels(Enum):
-    Announcements = int(
-        os.getenv("ANNOUNCEMENTS_CHANNEL_ID", 939530345693450331)
-    )  # Optionally use a different channel ID for testing
+    Announcements = int(os.getenv("ANNOUNCEMENTS_CHANNEL_ID"))
     RoleAssign = 939540767611957279  # role assign channel is not used in newer versions of discord.
 
 
