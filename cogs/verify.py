@@ -14,12 +14,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-api_key = os.getenv("MAIL_JET_KEY")
-api_secret = os.getenv("MAIL_JET_SECRET")
 verified_role_id = int(os.getenv("VERIFIED_ROLE_ID"))
 general_channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
 
-mailjet = Client(auth=(api_key, api_secret), version="v3.1")
+api_key = os.getenv("MAIL_JET_KEY")
+api_secret = os.getenv("MAIL_JET_SECRET")
+
+mailjet = None
+if api_key and api_secret:
+    mailjet = Client(auth=(api_key, api_secret), version="v3.1")
 
 regex = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
 
