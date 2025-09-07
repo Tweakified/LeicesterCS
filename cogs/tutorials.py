@@ -10,6 +10,7 @@ from modules.enums import FileLocations
 with open(FileLocations.Modules.value, mode="r", encoding="utf-8") as f:
     modules = load(f)
 
+
 def make_human_readable_list(items: list[str]) -> str:
     if len(items) == 0:
         return ""
@@ -17,6 +18,7 @@ def make_human_readable_list(items: list[str]) -> str:
         return items[0]
     else:
         return ", ".join(items[:-1]) + " and " + items[-1]
+
 
 class Tutorials(discord.ui.View):
     def __init__(self):
@@ -32,7 +34,8 @@ class Tutorials(discord.ui.View):
                 description=module.get("description", None),
                 emoji=module.get("emoji", modules.get("WIP", {}).get("emoji", None)),
             )
-            for code, module in modules.items() if code != "WIP"
+            for code, module in modules.items()
+            if code != "WIP"
         ],
     )
     async def on_select(
@@ -46,7 +49,9 @@ class Tutorials(discord.ui.View):
         embed_data = modules.get(select.values[0], {})
         embed.set_image(url=embed_data.get("image"))
         for field in embed_data.get("fields", modules.get("WIP", {}).get("fields", [])):
-            embed.add_field(name=field.get("name", ""), value=field.get("value", ""), inline=True)
+            embed.add_field(
+                name=field.get("name", ""), value=field.get("value", ""), inline=True
+            )
 
         authors = make_human_readable_list(embed_data.get("authors", []))
 
