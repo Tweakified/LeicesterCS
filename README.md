@@ -65,6 +65,9 @@ Follow these steps to get the project running locally:
 - **bot.py** — Main bot entry point.
 - **cogs/** — Bot features (verification, tutorials, tasks, etc.).
 - **modules/enums.py** — Shared enums and constants.
+- **data/modules.json** — Resources for each university module.
+- **tests/unit/** — Unit tests for the bot's functionality.
+- **tests/parallel/** — Tests for checking that an old and new version both produce the same output.
 - **requirements.txt** — Python dependencies.
 - **Dockerfile & docker-compose.yaml** — Containerisation support.
 
@@ -85,6 +88,18 @@ Commit & push your changes:
     git commit -m "Add my feature"
     git push origin feature/my-feature
 Open a Pull Request!
+
+## Testing
+
+To run the test suite first install the required dependencies:
+
+    pip install -r tests/requirements.txt
+
+Then execute the tests using pytest:
+
+    pytest -v
+
+Parallel tests (i.e., comparing an old version against a newer version) are run manually via GitHub Actions (see `.github/workflows/`). These may be used to verify that code refactoring doesn't change the output. 
 
 ## License
 This project is licensed under the Apache License 2.0. See LICENSE for details.
