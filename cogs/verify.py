@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 verified_role_id = int(os.getenv("VERIFIED_ROLE_ID"))
+get_verified_channel = int(os.getenv("GET_VERIFIED_CHANNEL"))
 general_channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
 
 api_key = os.getenv("MAIL_JET_KEY")
@@ -91,7 +92,7 @@ class Verify(commands.Cog):
     )
     @app_commands.checks.has_any_role(enums.Roles.Administration.value)
     async def update_verifymessage(self, interaction: discord.Interaction):
-        channel = self.bot.get_channel(1174512044725256232)
+        channel = self.bot.get_channel(get_verified_channel)
 
         if channel is None:
             interaction.response.send_message(":x: Channel not found.", ephemeral=True)
