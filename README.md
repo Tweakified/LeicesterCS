@@ -4,7 +4,8 @@ A custom Discord bot for the Leicester Computer Science Society, providing verif
 
 ## Features
 
-- **Email Verification:** Ensures only university students can access the server.
+- **Email Verification:** Ensures only university students can write messages on the server.
+- BETA: **Minecraft Verification:** Handles the LeicesterCS whitelist, ensuring only students can access the MC server.
 - **Role Assignment:** Self-assign roles for year, pronouns, and notifications.
 - **Tutorials:** Quick access to module specific resources.
 - **Rules Management:** Syncs server rules from Trello.
