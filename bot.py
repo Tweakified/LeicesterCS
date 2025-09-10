@@ -8,7 +8,14 @@ from datetime import datetime
 from typing import Optional
 
 # CONFIGURATION
-extensions = ["cogs.tasks", "cogs.misc", "cogs.guild", "cogs.verify", "cogs.tutorials"]
+extensions = [
+    "cogs.tasks",
+    "cogs.misc",
+    "cogs.guild",
+    "cogs.verify",
+    "cogs.tutorials",
+    "cogs.whitelist",
+]
 
 load_dotenv()
 
