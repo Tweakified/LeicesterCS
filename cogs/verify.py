@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 verified_role_id = int(os.getenv("VERIFIED_ROLE_ID"))
+dmu_verified_role_id = int(os.getenv("DMU_VERIFIED_ROLE_ID"))
 get_verified_channel = int(os.getenv("GET_VERIFIED_CHANNEL"))
 general_channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
 
@@ -67,8 +68,8 @@ def sendEmail(email, code):
 
 
 async def verificationRequest(interaction):
-    role = interaction.guild.get_role(verified_role_id)
-    if role in interaction.user.roles:
+    roles = interaction.user.roles
+    if any(role.id in (verified_role_id, dmu_verified_role_id) for role in roles):
         await interaction.response.send_message(
             "You have already verified!", ephemeral=True
         )
@@ -125,7 +126,11 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
             return
 
         domain = email[email.index("@") + 1 :]
-        if domain != "student.le.ac.uk" and domain != "leicester.ac.uk":
+        if (
+            domain != "student.le.ac.uk"
+            and domain != "leicester.ac.uk"
+            and domain != "dmu.ac.uk"
+        ):
             await interaction.response.send_message(
                 "Oops! You must use your student email.", ephemeral=True
             )
@@ -142,7 +147,7 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
 
         await interaction.response.send_message(
             ":thumbsup: An email has been sent to the address you entered. Please press the button when you're ready",
-            view=Ready_buttons(code),
+            view=Ready_buttons(code, domain),
             ephemeral=True,
         )
 
@@ -167,21 +172,23 @@ class Verify_buttons(ui.View):
 
 
 class Ready_buttons(ui.View):
-    def __init__(self, code):
+    def __init__(self, code, domain):
         super().__init__(timeout=None)
         self.codeSent = code
+        self.domain = domain
 
     @discord.ui.button(
         label="I Have It", style=discord.ButtonStyle.green, custom_id="ready"
     )
     async def verify_button(self, interaction: discord.Interaction, button: ui.Button):
-        await interaction.response.send_modal(CodeModal(self.codeSent))
+        await interaction.response.send_modal(CodeModal(self.codeSent, self.domain))
 
 
 class CodeModal(discord.ui.Modal, title="Enter the Code"):
-    def __init__(self, code):
+    def __init__(self, code, domain):
         super().__init__(timeout=None)
         self.codeSent = code
+        self.domain = domain
 
     code = discord.ui.TextInput(
         label="Code",
@@ -196,11 +203,15 @@ class CodeModal(discord.ui.Modal, title="Enter the Code"):
             )
             return
 
-        role = interaction.guild.get_role(verified_role_id)
+        roleId = verified_role_id
+        if self.domain == "dmu.ac.uk":
+            roleId = dmu_verified_role_id
+        role = interaction.guild.get_role(roleId)
+
         await interaction.user.add_roles(role)
         # add to file
         await interaction.response.send_message(
-            f"You were given the <@&{str(verified_role_id)}> role", ephemeral=True
+            f"You were given the <@&{str(roleId)}> role", ephemeral=True
         )
 
         general_channel = interaction.guild.get_channel(general_channel_id)
