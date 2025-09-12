@@ -2,3 +2,4 @@ discord.py==2.6.2
 python-dotenv==1.1.1
 trello==0.9.7.3
 mailjet-rest==1.5.1
+mcstatus==12.0.5

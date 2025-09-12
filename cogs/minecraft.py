@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from dotenv import load_dotenv
+from mcstatus import JavaServer
 from modules import enums
 import traceback
 import json
@@ -20,6 +21,8 @@ mcsmanager_token = os.getenv("MCSMANAGER_API_KEY")
 mcsmanager_daemon_id = os.getenv("MCSMANAGER_DAEMON_ID")
 mcsmanager_instance_id = os.getenv("MCSMANAGER_INSTANCE_ID")
 mc_whitelist_webhook_url = os.getenv("MC_WHITELIST_WEBHOOK_URL")
+mc_address = os.getenv("MC_ADDRESS")
+mc_port = os.getenv("MC_PORT")
 
 MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,16}$")
 
@@ -27,6 +30,9 @@ MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,16}$")
 class Minecraft(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        if not os.path.exists(enums.FileLocations.MCData.value):
+            with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
+                json.dump({}, f)
         print(f"{__name__} cog loaded.")
         bot.add_view(WhitelistButtons())
 
@@ -35,37 +41,31 @@ class Minecraft(commands.Cog):
         description="Check the status of the LeicesterMC Minecraft server",
     )
     async def mcstatus(self, interaction: discord.Interaction):
-        url = "https://api.mcsrvstat.us/2/mc.leicestercs.co.uk"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                if resp.status != 200:
-                    await interaction.response.send_message(
-                        "Failed to fetch server status.", ephemeral=True
-                    )
-                    return
-                data = await resp.json()
-
-        address = data.get("hostname", "Unknown")
-        version = data.get("version", "Unknown")
-        online = data.get("online", False)
-        players_online = data.get("players", {}).get("online", 0)
-        max_players = data.get("players", {}).get("max", 0)
-
-        status_text = "🟢 Online" if online else "🔴 Offline"
+        try:
+            server = JavaServer.lookup(f"{mc_address}:{mc_port}")
+            status = server.status()
+            version = status.version.name
+            online = True
+            players_online = status.players.online
+            max_players = status.players.max
+            status_text = "🟢 Online"
+        except Exception as e:
+            version = "Unknown"
+            online = False
+            players_online = 0
+            max_players = 0
+            status_text = "🔴 Offline"
 
         embed = discord.Embed(
             title="🎮 LeicesterMC Server Status",
             color=discord.Color.green() if online else discord.Color.red(),
         )
-        embed.add_field(name="Address", value=address, inline=False)
+        embed.add_field(name="Address", value=mc_address, inline=False)
         embed.add_field(name="Version", value=version, inline=True)
         embed.add_field(name="Status", value=status_text, inline=True)
         embed.add_field(
             name="Players", value=f"{players_online}/{max_players}", inline=True
         )
-
-        if "icon" in data:
-            embed.set_thumbnail(url=data["icon"])
 
         await interaction.response.send_message(embed=embed)
 
@@ -115,7 +115,7 @@ class WhitelistButtons(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(
-        label="Whitelist", style=discord.ButtonStyle.green, custom_id="whitelist_button"
+        label="Start", style=discord.ButtonStyle.green, custom_id="whitelist_button"
     )
     async def whitelist(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(WhitelistModal())
@@ -124,12 +124,12 @@ class WhitelistButtons(discord.ui.View):
 class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
     username = discord.ui.TextInput(
         label="Minecraft Username",
-        placeholder="⚠️ You are responsible for this account. Must follow server rules.",
+        placeholder="⚠️ You are responsible for this account. Must follow rules.",
     )
 
     confirm = discord.ui.TextInput(
         label="Confirmation",
-        placeholder="Type `Yes` to confirm you understand your responsibility and agree to follow the rules",
+        placeholder='Type "Yes" to confirm you understand your responsibility.',
         style=discord.TextStyle.short,
         required=True,
     )
