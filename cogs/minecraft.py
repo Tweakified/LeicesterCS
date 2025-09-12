@@ -115,7 +115,7 @@ class WhitelistButtons(discord.ui.View):
         super().__init__(timeout=None)
 
     @discord.ui.button(
-        label="Whitelist", style=discord.ButtonStyle.blue, custom_id="whitelist_button"
+        label="Whitelist", style=discord.ButtonStyle.green, custom_id="whitelist_button"
     )
     async def whitelist(self, interaction: discord.Interaction):
         await interaction.response.send_modal(WhitelistModal())
