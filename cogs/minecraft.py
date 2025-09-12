@@ -49,7 +49,7 @@ class Minecraft(commands.Cog):
             players_online = status.players.online
             max_players = status.players.max
             status_text = "🟢 Online"
-        except Exception as e:
+        except Exception:
             version = "Unknown"
             online = False
             players_online = 0
@@ -76,7 +76,9 @@ class Minecraft(commands.Cog):
     async def whitelist(self, interaction: discord.Interaction):
         # Ensure they’re verified
         roles = interaction.user.roles
-        if not any(role.id in (verified_role_id, dmu_verified_role_id) for role in roles):
+        if not any(
+            role.id in (verified_role_id, dmu_verified_role_id) for role in roles
+        ):
             await interaction.response.send_message(
                 f"You must complete email verification first. Go to <#{get_verified_channel}> or run /verify",
                 ephemeral=True,
@@ -117,7 +119,9 @@ class WhitelistButtons(discord.ui.View):
     @discord.ui.button(
         label="Start", style=discord.ButtonStyle.green, custom_id="whitelist_button"
     )
-    async def whitelist(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def whitelist(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         await interaction.response.send_modal(WhitelistModal())
 
 
