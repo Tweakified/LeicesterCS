@@ -88,7 +88,7 @@ class Misc(commands.Cog):
         )
 
     @app_commands.command(name="slowmode", description="Set channel slowmode")
-    @app_commands.checks.has_any_role(enums.Roles.Administration.value)
+    @app_commands.checks.has_any_role(enums.Roles.Management.value)
     async def slowmode(self, interaction: discord.Interaction, seconds: int):
         await interaction.channel.edit(slowmode_delay=seconds)
         await interaction.response.send_message(
