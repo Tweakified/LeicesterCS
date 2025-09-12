@@ -14,7 +14,7 @@ extensions = [
     "cogs.guild",
     "cogs.verify",
     "cogs.tutorials",
-    "cogs.whitelist",
+    "cogs.minecraft",
 ]
 
 load_dotenv()

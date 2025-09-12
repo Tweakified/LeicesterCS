@@ -16,8 +16,8 @@ class Guild(Enum):
 class Roles(Enum):
     """Roles in case they would have their name changed in the future."""
 
-    Administration = "💾 Committee"  # owners (Discord administrator perm)
-    Management = "💾 Committee"  # admins, owners (Discord admin perm not mandatory)
+    Administration = "🌳 Root"
+    Management = "💾 Committee"
     Staff = "💾 Committee"
 
 
@@ -35,6 +35,7 @@ class GuildChannels(Enum):
 class FileLocations(Enum):
     UpTime = os.path.join(BASE_DIR, "..", "uptime.json")
     Modules = os.path.join(BASE_DIR, "..", "data", "modules.json")
+    MCData = os.path.join(BASE_DIR, "..", "data", "minecraft.json")
 
 
 # COLOURS (HEX)

@@ -91,7 +91,7 @@ class Verify(commands.Cog):
         name="update-verify-message",
         description="Update the verify message in the verify channel.",
     )
-    @app_commands.checks.has_any_role(enums.Roles.Administration.value)
+    @app_commands.checks.has_any_role(enums.Roles.Management.value)
     async def update_verifymessage(self, interaction: discord.Interaction):
         channel = self.bot.get_channel(get_verified_channel)
 
