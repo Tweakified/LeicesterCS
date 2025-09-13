@@ -270,12 +270,12 @@ class WhitelistButtons(discord.ui.View):
         embed = discord.Embed(title="Privacy Policy", color=discord.Color.green())
         embed.add_field(
             name="Data Collected",
-            value="We only collect your Minecraft username and discord user ID when you use our Minecraft whitelisting system.",
+            value="We collect your Minecraft username and discord user ID when you use our Minecraft whitelisting system.",
             inline=False,
         )
         embed.add_field(
             name="Purpose/Usage",
-            value="The data is strictly used only for adding you to our Minecraft server whitelist and to assist in moderation if necessary (e.g., handling malicious behaviour).",
+            value="The data is strictly used only for adding you to our Minecraft server whitelist and to assist in moderation if necessary (e.g. handling malicious behaviour).",
             inline=False,
         )
         embed.add_field(
