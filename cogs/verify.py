@@ -1,16 +1,20 @@
 import traceback
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands, ui
 import random
+import re
+from datetime import datetime, timedelta
+import time
+import json
+import os
 
 # Custom modules
-import os
 from modules import enums
-import re
 
 from mailjet_rest import Client
 from dotenv import load_dotenv
+from cogs.minecraft import unwhitelist_account, unwhitelist_pipeline
 
 load_dotenv()
 
@@ -80,18 +84,63 @@ async def verificationRequest(interaction):
 class Verify(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        if not os.path.exists(enums.FileLocations.Verify.value):
+            with open(enums.FileLocations.Verify.value, "w", encoding="utf-8") as f:
+                json.dump({}, f)
         print(f"{__name__} cog loaded.")
+        self.cleanup_task.start()
         bot.add_view(Verify_buttons())
+
+    def cog_unload(self):
+        self.cleanup_task.cancel()
 
     @app_commands.command(name="verify", description="Server verification")
     async def verify(self, interaction: discord.Interaction):
         await verificationRequest(interaction)
 
     @app_commands.command(
+        name="unverify", description="Removes your data from the verify system."
+    )
+    async def unverify(self, interaction: discord.Interaction):
+        roles = interaction.user.roles
+        if not any(
+            role.id in (verified_role_id, dmu_verified_role_id) for role in roles
+        ):
+            await interaction.response.send_message(
+                "You are not verified!", ephemeral=True
+            )
+            return
+
+        with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        if str(interaction.user.id) in data:
+            data.pop(str(interaction.user.id), None)
+
+            with open(enums.FileLocations.Verify.value, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4)
+
+        await unwhitelist_account(interaction, str(interaction.user.id), False)
+
+        roleIds = [verified_role_id, dmu_verified_role_id]
+        userRoles = [role for role in roles if role.id in roleIds]
+
+        if userRoles:
+            await interaction.user.remove_roles(*userRoles)
+            await interaction.response.send_message(
+                "You have been unverified and your data has been removed.",
+                ephemeral=True,
+            )
+        else:
+            await interaction.response.send_message(
+                "You do not have a verifed role.", ephemeral=True
+            )
+
+    @app_commands.command(
         name="update-verify-message",
         description="Update the verify message in the verify channel.",
     )
-    @app_commands.checks.has_any_role(enums.Roles.Management.value)
+    @app_commands.checks.has_any_role(enums.Roles.Administration.value)
     async def update_verifymessage(self, interaction: discord.Interaction):
         channel = self.bot.get_channel(get_verified_channel)
 
@@ -109,6 +158,48 @@ class Verify(commands.Cog):
         await interaction.response.send_message(
             f"🔲 Verify message updated in {channel.mention}.", ephemeral=True
         )
+
+    @tasks.loop(hours=24)
+    async def cleanup_task(self):
+        current_time = int(time.time())
+        removed = []
+
+        with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
+            verify_data = json.load(f)
+        with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
+            mc_data = json.load(f)
+
+        guild = self.bot.get_guild(enums.Guild.LeicesterCS.value)
+
+        for discord_id, entry in list(verify_data.items()):
+            if entry.get("expires") and current_time > entry["expires"]:
+                removed.append(discord_id)
+                verify_data.pop(discord_id, None)
+
+                removed_usernames = mc_data.pop(discord_id, [])
+
+                member = guild.get_member(int(discord_id))
+                if member:
+                    roleIds = [verified_role_id, dmu_verified_role_id]
+                    roles_to_remove = [
+                        role for role in member.roles if role.id in roleIds
+                    ]
+
+                    if roles_to_remove:
+                        await member.remove_roles(*roles_to_remove)
+
+                if removed_usernames:
+                    await unwhitelist_pipeline(removed_usernames)
+
+        with open(enums.FileLocations.Verify.value, "w", encoding="utf-8") as f:
+            json.dump(verify_data, f, indent=4)
+        with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
+            json.dump(mc_data, f, indent=4)
+
+        if removed:
+            print(
+                f"[Cleanup] Removed {len(removed)} expired verification entries and their roles/accounts."
+            )
 
 
 class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
@@ -147,7 +238,7 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
 
         await interaction.response.send_message(
             ":thumbsup: An email has been sent to the address you entered. Please press the button when you're ready",
-            view=Ready_buttons(code, domain),
+            view=Ready_buttons(code, email, domain),
             ephemeral=True,
         )
 
@@ -170,24 +261,67 @@ class Verify_buttons(ui.View):
     async def verify_button(self, interaction: discord.Interaction, button: ui.Button):
         await verificationRequest(interaction)
 
+    @discord.ui.button(
+        label="Privacy Policy",
+        style=discord.ButtonStyle.grey,
+        custom_id="verify_privacy_policy",
+    )
+    async def verify_privacy_policy(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        embed = discord.Embed(
+            title="Student Email Verification Privacy Policy",
+            color=discord.Color.green(),
+        )
+        embed.add_field(
+            name="Data Collected",
+            value="We collect your student email address and your Discord user ID when you complete the verification process.",
+            inline=False,
+        )
+        embed.add_field(
+            name="Purpose/Usage",
+            value="This data is used only to:\n"
+            "• Confirm your student status.\n"
+            "• Allow access to restricted areas such as the Minecraft whitelist.\n"
+            "• Assist in moderation if necessary (e.g., handling malicious behaviour).",
+            inline=False,
+        )
+        embed.add_field(
+            name="Retention & Expiry",
+            value="Your email data will be stored for 1 year. After that, it will be automatically deleted and you will need to re-verify to continue accessing student-only services.",
+            inline=False,
+        )
+        embed.add_field(
+            name="Removal",
+            value="You may use `/unverify` at any time to remove your email and associated data from our systems. This will also revoke your student access (including the Minecraft whitelist).",
+            inline=False,
+        )
+        embed.set_footer(text="LeicesterMC Student Verification Privacy Policy")
+
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 class Ready_buttons(ui.View):
-    def __init__(self, code, domain):
+    def __init__(self, code, email, domain):
         super().__init__(timeout=None)
         self.codeSent = code
+        self.email = email
         self.domain = domain
 
     @discord.ui.button(
         label="I Have It", style=discord.ButtonStyle.green, custom_id="ready"
     )
     async def verify_button(self, interaction: discord.Interaction, button: ui.Button):
-        await interaction.response.send_modal(CodeModal(self.codeSent, self.domain))
+        await interaction.response.send_modal(
+            CodeModal(self.codeSent, self.email, self.domain)
+        )
 
 
 class CodeModal(discord.ui.Modal, title="Enter the Code"):
-    def __init__(self, code, domain):
+    def __init__(self, code, email, domain):
         super().__init__(timeout=None)
         self.codeSent = code
+        self.email = email
         self.domain = domain
 
     code = discord.ui.TextInput(
@@ -203,13 +337,21 @@ class CodeModal(discord.ui.Modal, title="Enter the Code"):
             )
             return
 
+        with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        expiry_time = int((datetime.utcnow() + timedelta(days=365)).timestamp())
+        data[str(interaction.user.id)] = {"email": self.email, "expires": expiry_time}
+
+        with open(enums.FileLocations.Verify.value, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4)
+
         roleId = verified_role_id
         if self.domain == "dmu.ac.uk":
             roleId = dmu_verified_role_id
         role = interaction.guild.get_role(roleId)
 
         await interaction.user.add_roles(role)
-        # add to file
         await interaction.response.send_message(
             f"You were given the <@&{str(roleId)}> role", ephemeral=True
         )

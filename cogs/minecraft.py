@@ -9,6 +9,7 @@ from mcstatus import JavaServer
 from modules import enums
 import traceback
 import json
+from typing import List
 
 load_dotenv()
 
@@ -29,17 +30,33 @@ MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,16}$")
 mcs_command_url = f"{mcsmanager_host}/api/protected_instance/command"
 
 
-async def unwhitelist_account(interaction: discord.Interaction, discord_id: str):
+async def unwhitelist_pipeline(minecraft_usernames: List[str]):
+    params = {
+        "apikey": mcsmanager_token,
+        "uuid": mcsmanager_instance_id,
+        "daemonId": mcsmanager_daemon_id,
+        "command": "; ".join([f"whitelist remove {u}" for u in minecraft_usernames]),
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(mcs_command_url, params=params) as resp:
+            return resp.status == 200
+
+
+async def unwhitelist_account(
+    interaction: discord.Interaction, discord_id: str, respond: bool = True
+):
     with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     removed_usernames = []
 
     if discord_id not in data:
-        await interaction.response.send_message(
-            "No Minecraft accounts found to unwhitelist.",
-            ephemeral=True,
-        )
+        if respond:
+            await interaction.response.send_message(
+                "No Minecraft accounts found to unwhitelist.",
+                ephemeral=True,
+            )
         return
 
     removed_usernames = data.pop(discord_id, [])
@@ -62,25 +79,41 @@ async def unwhitelist_account(interaction: discord.Interaction, discord_id: str)
             },
         )
 
-    params = {
-        "apikey": mcsmanager_token,
-        "uuid": mcsmanager_instance_id,
-        "daemonId": mcsmanager_daemon_id,
-        "command": "; ".join([f"whitelist remove {u}" for u in removed_usernames]),
-    }
+    success = await unwhitelist_pipeline(removed_usernames)
+    if respond:
+        if success:
+            await interaction.response.send_message(
+                f"Successfully removed whitelisted account(s): {pretty_removed_usernames}",
+                ephemeral=True,
+            )
+        else:
+            await interaction.response.send_message(
+                "Failed to remove the Minecraft account(s) from the whitelist. Please contact a member of the committee.",
+                ephemeral=True,
+            )
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(mcs_command_url, params=params) as resp:
-            if resp.status == 200:
-                await interaction.response.send_message(
-                    f"Successfully removed whitelisted account(s): {pretty_removed_usernames}",
-                    ephemeral=True,
-                )
-            else:
-                await interaction.response.send_message(
-                    "Failed to remove the Minecraft account(s) from the whitelist. Please contact a member of the committee.",
-                    ephemeral=True,
-                )
+
+async def start_whitelist_process(interaction: discord.Interaction):
+    # Ensure they’re verified
+    roles = interaction.user.roles
+    if not any(role.id in (verified_role_id, dmu_verified_role_id) for role in roles):
+        await interaction.response.send_message(
+            f"You must complete email verification first. Go to <#{get_verified_channel}> or run /verify",
+            ephemeral=True,
+        )
+        return
+
+    with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
+        verify_data = json.load(f)
+
+    if str(interaction.user.id) not in verify_data:
+        await interaction.response.send_message(
+            "Please run `/verify` first. We migrated to a new process as of the 13/09/2025 so you'll need to run verify again.",
+            ephemeral=True,
+        )
+        return
+
+    await interaction.response.send_modal(WhitelistModal())
 
 
 class Minecraft(commands.Cog):
@@ -130,18 +163,7 @@ class Minecraft(commands.Cog):
     )
     @app_commands.checks.has_any_role(1414992207282442300)  # Temp Beta tester role
     async def whitelist(self, interaction: discord.Interaction):
-        # Ensure they’re verified
-        roles = interaction.user.roles
-        if not any(
-            role.id in (verified_role_id, dmu_verified_role_id) for role in roles
-        ):
-            await interaction.response.send_message(
-                f"You must complete email verification first. Go to <#{get_verified_channel}> or run /verify",
-                ephemeral=True,
-            )
-            return
-
-        await interaction.response.send_modal(WhitelistModal())
+        await start_whitelist_process(interaction)
 
     @app_commands.checks.has_any_role(mc_whitelisted_role_id)
     @app_commands.command(
@@ -235,7 +257,7 @@ class WhitelistButtons(discord.ui.View):
     async def whitelist(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await interaction.response.send_modal(WhitelistModal())
+        await start_whitelist_process(interaction)
 
     @discord.ui.button(
         label="Privacy Policy",
@@ -253,7 +275,7 @@ class WhitelistButtons(discord.ui.View):
         )
         embed.add_field(
             name="Purpose/Usage",
-            value="The data is strictly used only for adding you to our Minecraft server whitelist and moderation.",
+            value="The data is strictly used only for adding you to our Minecraft server whitelist and to assist in moderation if necessary (e.g., handling malicious behaviour).",
             inline=False,
         )
         embed.add_field(
