@@ -26,6 +26,7 @@ mc_address = os.getenv("MC_ADDRESS")
 mc_port = os.getenv("MC_PORT")
 
 MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,16}$")
+mcs_command_url = f"{mcsmanager_host}/api/protected_instance/command"
 
 
 async def unwhitelist_account(interaction: discord.Interaction, discord_id: str):
@@ -42,6 +43,8 @@ async def unwhitelist_account(interaction: discord.Interaction, discord_id: str)
         return
 
     removed_usernames = data.pop(discord_id, [])
+    pretty_removed_usernames = ", ".join(f"`{u}`" for u in removed_usernames)
+
     member = interaction.guild.get_member(int(discord_id))
     if member:
         role = interaction.guild.get_role(mc_whitelisted_role_id)
@@ -51,21 +54,33 @@ async def unwhitelist_account(interaction: discord.Interaction, discord_id: str)
     with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
 
-    for removed_username in removed_usernames:
-        url = f"{mcsmanager_host}/api/protected_instance/command"
-        params = {
-            "apikey": mcsmanager_token,
-            "uuid": mcsmanager_instance_id,
-            "daemonId": mcsmanager_daemon_id,
-            "command": f"whitelist remove {removed_username}",
-        }
-        async with aiohttp.ClientSession() as session:
-            await session.post(url, params=params)
+    async with aiohttp.ClientSession() as session:
+        await session.post(
+            mc_whitelist_webhook_url,
+            json={
+                "content": f"<@{interaction.user.id}> unwhitelisted the Minecraft account(s) {pretty_removed_usernames}"
+            },
+        )
 
-    await interaction.response.send_message(
-        f"Successfully unwhitelisted: {', '.join(removed_usernames)}",
-        ephemeral=True,
-    )
+    params = {
+        "apikey": mcsmanager_token,
+        "uuid": mcsmanager_instance_id,
+        "daemonId": mcsmanager_daemon_id,
+        "command": "; ".join([f"whitelist remove {u}" for u in removed_usernames]),
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.post(mcs_command_url, params=params) as resp:
+            if resp.status == 200:
+                await interaction.response.send_message(
+                    f"Successfully removed whitelisted account(s): {pretty_removed_usernames}",
+                    ephemeral=True,
+                )
+            else:
+                await interaction.response.send_message(
+                    "Failed to remove the Minecraft account(s) from the whitelist. Please contact a member of the committee.",
+                    ephemeral=True,
+                )
 
 
 class Minecraft(commands.Cog):
@@ -132,15 +147,16 @@ class Minecraft(commands.Cog):
     @app_commands.command(
         name="unwhitelist", description="Remove Minecraft accounts from the whitelist."
     )
-    async def unwhitelist(interaction: discord.Interaction):
+    async def unwhitelist(self, interaction: discord.Interaction):
         await unwhitelist_account(interaction, str(interaction.user.id))
 
     @app_commands.checks.has_any_role(enums.Roles.Management.value)
     @app_commands.command(
-        name="unwhitelist",
+        name="mod_unwhitelist",
         description="(Mod) Remove Minecraft accounts from the whitelist.",
     )
     async def mod_unwhitelist(
+        self,
         interaction: discord.Interaction,
         member: discord.Member = None,
         username: str = None,
@@ -232,22 +248,17 @@ class WhitelistButtons(discord.ui.View):
         embed = discord.Embed(title="Privacy Policy", color=discord.Color.green())
         embed.add_field(
             name="Data Collected",
-            value="We only collect your **Minecraft username** and discord ID when you use `/whitelist`.",
+            value="We only collect your Minecraft username and discord user ID when you use our Minecraft whitelisting system.",
             inline=False,
         )
         embed.add_field(
-            name="Purpose",
-            value="Your username is used **only** to add you to our Minecraft server whitelist.",
-            inline=False,
-        )
-        embed.add_field(
-            name="Usage",
-            value="The data is strictly used for moderation and server access.",
+            name="Purpose/Usage",
+            value="The data is strictly used only for adding you to our Minecraft server whitelist and moderation.",
             inline=False,
         )
         embed.add_field(
             name="Removal",
-            value="Use `/unwhitelist` to remove your account, and your data will be **deleted immediately**.",
+            value="Use `/unwhitelist` to remove your account, and your data will be deleted immediately.",
             inline=False,
         )
         embed.set_footer(text="LeicesterMC Privacy Policy")
@@ -293,12 +304,13 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
             data[discord_id] = []
 
         for temp_discordId, usernames in data.items():
-            if username in [u.lower() for u in usernames]:
+            if username.lower() in [u.lower() for u in usernames]:
                 await interaction.response.send_message(
-                    "This Minecraft account is already verified by another Discord user.",
+                    "This Minecraft account is already whitelisted.",
                     ephemeral=True,
                 )
                 return
+
         data[discord_id].append(username)
 
         with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
@@ -315,7 +327,6 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
                 },
             )
 
-        url = f"{mcsmanager_host}/api/protected_instance/command"
         params = {
             "apikey": mcsmanager_token,
             "uuid": mcsmanager_instance_id,
@@ -324,7 +335,7 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
         }
 
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, params=params) as resp:
+            async with session.post(mcs_command_url, params=params) as resp:
                 if resp.status == 200:
                     await interaction.response.send_message(
                         f"Successfully whitelisted `{username}`!", ephemeral=True
