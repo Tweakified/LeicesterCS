@@ -282,7 +282,7 @@ class Verify_buttons(ui.View):
             name="Purpose/Usage",
             value="This data is used only to:\n"
             "• Confirm your student status.\n"
-            "• Allow access to restricted areas such as the Minecraft whitelist.\n"
+            "• Enable participation in services that require student verification, such as our Minecraft server.\n"
             "• Assist in moderation if necessary (e.g., handling malicious behaviour).",
             inline=False,
         )
@@ -296,7 +296,7 @@ class Verify_buttons(ui.View):
             value="You may use `/unverify` at any time to remove your email and associated data from our systems. This will also revoke your student access (including the Minecraft whitelist).",
             inline=False,
         )
-        embed.set_footer(text="LeicesterMC Student Verification Privacy Policy")
+        embed.set_footer(text=interaction.guild.name + " Verify Privacy Policy")
 
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
