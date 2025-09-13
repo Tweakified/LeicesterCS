@@ -21,10 +21,51 @@ mcsmanager_token = os.getenv("MCSMANAGER_API_KEY")
 mcsmanager_daemon_id = os.getenv("MCSMANAGER_DAEMON_ID")
 mcsmanager_instance_id = os.getenv("MCSMANAGER_INSTANCE_ID")
 mc_whitelist_webhook_url = os.getenv("MC_WHITELIST_WEBHOOK_URL")
+mc_whitelisted_role_id = int(os.getenv("MC_WHITELISTED_ROLE_ID"))
 mc_address = os.getenv("MC_ADDRESS")
 mc_port = os.getenv("MC_PORT")
 
 MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,16}$")
+
+
+async def unwhitelist_account(interaction: discord.Interaction, discord_id: str):
+    with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    removed_usernames = []
+
+    if discord_id not in data:
+        await interaction.response.send_message(
+            "No Minecraft accounts found to unwhitelist.",
+            ephemeral=True,
+        )
+        return
+
+    removed_usernames = data.pop(discord_id, [])
+    member = interaction.guild.get_member(int(discord_id))
+    if member:
+        role = interaction.guild.get_role(mc_whitelisted_role_id)
+        if role in member.roles:
+            await member.remove_roles(role)
+
+    with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+
+    for removed_username in removed_usernames:
+        url = f"{mcsmanager_host}/api/protected_instance/command"
+        params = {
+            "apikey": mcsmanager_token,
+            "uuid": mcsmanager_instance_id,
+            "daemonId": mcsmanager_daemon_id,
+            "command": f"whitelist remove {removed_username}",
+        }
+        async with aiohttp.ClientSession() as session:
+            await session.post(url, params=params)
+
+    await interaction.response.send_message(
+        f"Successfully unwhitelisted: {', '.join(removed_usernames)}",
+        ephemeral=True,
+    )
 
 
 class Minecraft(commands.Cog):
@@ -87,6 +128,62 @@ class Minecraft(commands.Cog):
 
         await interaction.response.send_modal(WhitelistModal())
 
+    @app_commands.checks.has_any_role(mc_whitelisted_role_id)
+    @app_commands.command(
+        name="unwhitelist", description="Remove Minecraft accounts from the whitelist."
+    )
+    async def unwhitelist(interaction: discord.Interaction):
+        await unwhitelist_account(interaction, str(interaction.user.id))
+
+    @app_commands.checks.has_any_role(enums.Roles.Management.value)
+    @app_commands.command(
+        name="unwhitelist",
+        description="(Mod) Remove Minecraft accounts from the whitelist.",
+    )
+    async def mod_unwhitelist(
+        interaction: discord.Interaction,
+        member: discord.Member = None,
+        username: str = None,
+    ):
+        if not member and not username:
+            await interaction.response.send_message(
+                "You must provide either a Discord member or a Minecraft username.",
+                ephemeral=True,
+            )
+            return
+
+        if member and username:
+            await interaction.response.send_message(
+                "Please provide either a Discord member or a Minecraft username, not both.",
+                ephemeral=True,
+            )
+            return
+
+        if member:
+            await unwhitelist_account(interaction, str(member.id))
+            return
+
+        if username:
+            with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            username_lower = username.strip().lower()
+            target_discord_id = None
+
+            for discord_id, usernames in data.items():
+                if username_lower in [u.lower() for u in usernames]:
+                    target_discord_id = discord_id
+                    break
+
+            if not target_discord_id:
+                await interaction.response.send_message(
+                    f"No user found linked to Minecraft account `{username}`.",
+                    ephemeral=True,
+                )
+                return
+
+            await unwhitelist_account(interaction, target_discord_id)
+
     @app_commands.command(
         name="update-whitelist-message",
         description="Update the whitelist message in the whitelist channel.",
@@ -104,7 +201,7 @@ class Minecraft(commands.Cog):
             ),
             color=discord.Color.green(),
         )
-        embed.set_footer(text=interaction.guild.name + " Whitelist")
+        embed.set_footer(text="LeicesterMC Whitelist")
 
         await channel.send(embed=embed, view=WhitelistButtons())
         await interaction.response.send_message(
@@ -123,6 +220,38 @@ class WhitelistButtons(discord.ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.response.send_modal(WhitelistModal())
+
+    @discord.ui.button(
+        label="Privacy Policy",
+        style=discord.ButtonStyle.grey,
+        custom_id="privacy_policy",
+    )
+    async def privacy_policy(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        embed = discord.Embed(title="Privacy Policy", color=discord.Color.green())
+        embed.add_field(
+            name="Data Collected",
+            value="We only collect your **Minecraft username** and discord ID when you use `/whitelist`.",
+            inline=False,
+        )
+        embed.add_field(
+            name="Purpose",
+            value="Your username is used **only** to add you to our Minecraft server whitelist.",
+            inline=False,
+        )
+        embed.add_field(
+            name="Usage",
+            value="The data is strictly used for moderation and server access.",
+            inline=False,
+        )
+        embed.add_field(
+            name="Removal",
+            value="Use `/unwhitelist` to remove your account, and your data will be **deleted immediately**.",
+            inline=False,
+        )
+        embed.set_footer(text="LeicesterMC Privacy Policy")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
@@ -159,10 +288,24 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
         with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        data[username] = str(interaction.user.id)
+        discord_id = str(interaction.user.id)
+        if discord_id not in data:
+            data[discord_id] = []
+
+        for temp_discordId, usernames in data.items():
+            if username in [u.lower() for u in usernames]:
+                await interaction.response.send_message(
+                    "This Minecraft account is already verified by another Discord user.",
+                    ephemeral=True,
+                )
+                return
+        data[discord_id].append(username)
 
         with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
             json.dump(data, f)
+
+        role = interaction.guild.get_role(mc_whitelisted_role_id)
+        await interaction.user.add_roles(role)
 
         async with aiohttp.ClientSession() as session:
             await session.post(
