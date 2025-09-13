@@ -30,4 +30,6 @@ Thumbs.db
 
 start.bat
 uptime.json
+
 data/minecraft.json
+data/verify.json

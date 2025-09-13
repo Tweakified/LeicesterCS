@@ -36,6 +36,7 @@ class FileLocations(Enum):
     UpTime = os.path.join(BASE_DIR, "..", "uptime.json")
     Modules = os.path.join(BASE_DIR, "..", "data", "modules.json")
     MCData = os.path.join(BASE_DIR, "..", "data", "minecraft.json")
+    Verify = os.path.join(BASE_DIR, "..", "data", "verify.json")
 
 
 # COLOURS (HEX)
