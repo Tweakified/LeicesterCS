@@ -7,6 +7,7 @@ from discord import app_commands
 from dotenv import load_dotenv
 from mcstatus import JavaServer
 from modules import enums
+from modules.utils import ensure_json_exists
 import traceback
 import json
 from typing import List
@@ -119,9 +120,7 @@ async def start_whitelist_process(interaction: discord.Interaction):
 class Minecraft(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        if not os.path.exists(enums.FileLocations.MCData.value):
-            with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
-                json.dump({}, f)
+        ensure_json_exists(enums.FileLocations.MCData.value)
         print(f"{__name__} cog loaded.")
         bot.add_view(WhitelistButtons())
 
@@ -231,19 +230,26 @@ class Minecraft(commands.Cog):
         channel = self.bot.get_channel(mc_whitelist_channel)
 
         embed = discord.Embed(
-            title="🎮 Minecraft Whitelist",
+            title=":ada: Minecraft Whitelist",
             description=(
-                "⚠️ By whitelisting a Minecraft account, **you are responsible for the user**.\n\n"
-                "You must ensure that the player follows all of our server rules.\n"
-                "By clicking the Start button below you agree to this."
+                "To whitelist a Minecraft username on the server, click the start button below. "
+                "You must ensure that the player follows all of our server rules, as you will be responsible for their actions. "
+                f"Your student email must be verified to use this feature. Please see <#{get_verified_channel}> for more information."
             ),
             color=discord.Color.green(),
+        )
+        embed.add_field(
+            name="Consent",
+            value=(
+                ":warning: By completing the whitelisting process, you consent to the collection and processing of this data as described in the privacy policy button."
+            ),
+            inline=False,
         )
         embed.set_footer(text="LeicesterMC Whitelist")
 
         await channel.send(embed=embed, view=WhitelistButtons())
         await interaction.response.send_message(
-            f"✅ Whitelist message updated in {channel.mention}.", ephemeral=True
+            f"🔲 Whitelist message updated in {channel.mention}.", ephemeral=True
         )
 
 
@@ -267,20 +273,41 @@ class WhitelistButtons(discord.ui.View):
     async def privacy_policy(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        embed = discord.Embed(title="Privacy Policy", color=discord.Color.green())
+        embed = discord.Embed(
+            title=":ada: Minecraft Whitelist Privacy Policy",
+            color=discord.Color.green(),
+        )
         embed.add_field(
             name="Data Collected",
-            value="We collect your Minecraft username and discord user ID when you use our Minecraft whitelisting system.",
+            value="We collect your Minecraft username and Discord user ID when you use our Minecraft whitelisting system.",
             inline=False,
         )
         embed.add_field(
-            name="Purpose/Usage",
-            value="The data is strictly used only for adding you to our Minecraft server whitelist and to assist in moderation if necessary (e.g. handling malicious behaviour).",
+            name="Purpose & Usage",
+            value="This data is used only to:\n"
+            "• Add your Minecraft username to our server whitelist.\n"
+            "• Assist in moderation if necessary (e.g. handling rule violations).\n",
             inline=False,
         )
         embed.add_field(
-            name="Removal",
-            value="Use `/unwhitelist` to remove your account, and your data will be deleted immediately.",
+            name="Retention & Expiry",
+            value=(
+                "Your Minecraft username and Discord user ID will be stored until "
+                "your student email verification expires (1 year). After that, this data will be "
+                "removed as part of our regular cleanup process. If you are banned from any of our services, "
+                "your student email may be retained indefinitely to prevent re-registration across our services. "
+                "Your Minecraft username and Discord ID may also be kept for moderation purposes, but will not be used for any other reason."
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Data Removal",
+            value="You may use `/unwhitelist` at any time to remove your Minecraft username and associated data from our systems. You may also use `/unverify` to remove your student email and its associated data. If you face any issues with this process, please contact a member of the committee.",
+            inline=False,
+        )
+        embed.add_field(
+            name="Data Access",
+            value="Your data is only accessible to current members of the committee and the designated data handler (bot host) for security and administration purposes. It will not be shared with third parties.",
             inline=False,
         )
         embed.set_footer(text="LeicesterMC Privacy Policy")
