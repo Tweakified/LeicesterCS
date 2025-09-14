@@ -21,6 +21,7 @@ load_dotenv()
 
 verified_role_id = int(os.getenv("VERIFIED_ROLE_ID"))
 dmu_verified_role_id = int(os.getenv("DMU_VERIFIED_ROLE_ID"))
+mc_whitelisted_role_id = int(os.getenv("MC_WHITELISTED_ROLE_ID"))
 get_verified_channel = int(os.getenv("GET_VERIFIED_CHANNEL"))
 general_channel_id = int(os.getenv("GENERAL_CHANNEL_ID"))
 
@@ -121,7 +122,7 @@ class Verify(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         ensure_json_exists(enums.FileLocations.Verify.value)
-        ensure_json_exists(enums.FileLocations.Banned.value)
+        ensure_json_exists(enums.FileLocations.Banned.value, [])
         print(f"{__name__} cog loaded.")
         self.cleanup_task.start()
         bot.add_view(Verify_buttons())
@@ -165,7 +166,7 @@ class Verify(commands.Cog):
             return
 
         embed = discord.Embed(
-            title=":ada: Email Verification",
+            title="<:ada:1416635217283776573> Email Verification",
             description=(
                 "Due to bots, we have implemented a feature where you must verify your student email address to use the server. "
                 "This is a simple process that only takes a few minutes. The following domains are allowed:\n"
@@ -204,18 +205,20 @@ class Verify(commands.Cog):
 
     @app_commands.checks.has_any_role(enums.Roles.Management.value)
     @app_commands.command(name="ban", description="Ban a student email from verifying.")
-    async def ban(interaction: discord.Interaction, email: str):
+    async def ban(self, interaction: discord.Interaction, email: str):
         with open(enums.FileLocations.Banned.value, "r", encoding="utf-8") as f:
             banned_data = json.load(f)
 
-        if email.lower() in [e.lower() for e in banned_data]:
+        email = email.strip().lower()
+
+        if email in [e.lower() for e in banned_data]:
             await interaction.response.send_message(
                 f"The email `{email}` is already banned.",
                 ephemeral=True,
             )
             return
 
-        banned_data.append(email.lower())
+        banned_data.append(email)
 
         with open(enums.FileLocations.Banned.value, "w", encoding="utf-8") as f:
             json.dump(banned_data, f, indent=4)
@@ -225,12 +228,12 @@ class Verify(commands.Cog):
 
         discord_id = None
         for did, entry in data.items():
-            if entry.get("email", "").lower() == email.lower():
+            if entry.get("email", "").lower() == email:
                 discord_id = did
                 break
 
         if discord_id:
-            await unverify_account(interaction, email)
+            await unverify_account(interaction, discord_id)
 
         await interaction.response.send_message(
             f"The email `{email}` has been banned from verifying.",
@@ -258,7 +261,7 @@ class Verify(commands.Cog):
 
                 member = guild.get_member(int(discord_id))
                 if member:
-                    roleIds = [verified_role_id, dmu_verified_role_id]
+                    roleIds = [verified_role_id, dmu_verified_role_id, mc_whitelisted_role_id]
                     roles_to_remove = [
                         role for role in member.roles if role.id in roleIds
                     ]
@@ -287,7 +290,8 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        email = self.email.value
+        email = self.email.value.strip().lower()
+
         if not re.fullmatch(regex, email):
             await interaction.response.send_message(
                 "Oops! Please enter a valid email", ephemeral=True
@@ -295,13 +299,20 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
             return
 
         domain = email[email.index("@") + 1 :]
-        if (
-            domain != "student.le.ac.uk"
-            and domain != "leicester.ac.uk"
-            and domain != "dmu.ac.uk"
-        ):
+        if domain not in ("student.le.ac.uk", "leicester.ac.uk", "dmu.ac.uk"):
             await interaction.response.send_message(
                 "Oops! You must use your student email.", ephemeral=True
+            )
+            return
+
+        with open(enums.FileLocations.Banned.value, "r", encoding="utf-8") as f:
+            banned_data = json.load(f)
+
+        if email in [b.lower() for b in banned_data]:
+            await interaction.response.send_message(
+                "❌ This email is banned from verifying. "
+                "If you believe this is a mistake, or would like to appeal please contact a member of the committee.",
+                ephemeral=True,
             )
             return
 
@@ -348,7 +359,7 @@ class Verify_buttons(ui.View):
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         embed = discord.Embed(
-            title=":ada: Email Verification Privacy Policy",
+            title="<:ada:1416635217283776573> Email Verification Privacy Policy",
             color=discord.Color.green(),
         )
         embed.add_field(
@@ -478,7 +489,7 @@ class LookupModal(discord.ui.Modal, title="Lookup User Data"):
         label="Discord ID or Mention (optional)",
         style=discord.TextStyle.short,
         required=False,
-        placeholder="Example: 277116211022790656 or @User",
+        placeholder="Example: 277116211022790656",
     )
     mc_account = discord.ui.TextInput(
         label="Minecraft Username (optional)",

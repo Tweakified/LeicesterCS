@@ -98,4 +98,17 @@ async def uptime_command(interaction: discord.Interaction):
     )
 
 
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    if isinstance(error, app_commands.MissingAnyRole):
+        required_roles = ', '.join(f"`{role}`" for role in error.missing_roles)
+        await interaction.response.send_message(
+            f"You need at least one of the following roles to use this command: {required_roles}",
+            ephemeral=True
+        )
+    else:
+        await interaction.response.send_message("An unexpected error occurred.", ephemeral=True)
+        raise error
+
+
 bot.run(os.getenv("DISCORD_TOKEN"))
