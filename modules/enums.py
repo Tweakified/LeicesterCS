@@ -37,6 +37,7 @@ class FileLocations(Enum):
     Modules = os.path.join(BASE_DIR, "..", "data", "modules.json")
     MCData = os.path.join(BASE_DIR, "..", "data", "minecraft.json")
     Verify = os.path.join(BASE_DIR, "..", "data", "verify.json")
+    Banned = os.path.join(BASE_DIR, "..", "data", "banned.json")
 
 
 # COLOURS (HEX)
