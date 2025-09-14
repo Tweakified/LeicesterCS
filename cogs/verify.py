@@ -89,7 +89,9 @@ async def verificationRequest(interaction):
             "You have already verified!", ephemeral=True
         )
     else:
-        await interaction.response.send_modal(EmailModal())
+        await interaction.response.send_modal(
+            EmailModal(send_welcome=not has_verify_role)
+        )
 
 
 async def unverify_account(interaction: discord.Interaction, discord_id: str):
@@ -293,6 +295,10 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
         placeholder="Your uni email here...",
     )
 
+    def __init__(self, send_welcome: bool):
+        super().__init__()
+        self.send_welcome = send_welcome
+
     async def on_submit(self, interaction: discord.Interaction):
         email = self.email.value.strip().lower()
 
@@ -331,7 +337,7 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
 
         await interaction.response.send_message(
             ":thumbsup: An email has been sent to the address you entered. Please press the button when you're ready",
-            view=Ready_buttons(code, email, domain),
+            view=Ready_buttons(code, email, domain, self.send_welcome),
             ephemeral=True,
         )
 
@@ -420,27 +426,29 @@ class Verify_buttons(ui.View):
 
 
 class Ready_buttons(ui.View):
-    def __init__(self, code, email, domain):
+    def __init__(self, code, email, domain, send_welcome):
         super().__init__(timeout=None)
         self.codeSent = code
         self.email = email
         self.domain = domain
+        self.send_welcome = send_welcome
 
     @discord.ui.button(
         label="I Have It", style=discord.ButtonStyle.green, custom_id="ready"
     )
     async def verify_button(self, interaction: discord.Interaction, button: ui.Button):
         await interaction.response.send_modal(
-            CodeModal(self.codeSent, self.email, self.domain)
+            CodeModal(self.codeSent, self.email, self.domain, self.send_welcome)
         )
 
 
 class CodeModal(discord.ui.Modal, title="Enter the Code"):
-    def __init__(self, code, email, domain):
+    def __init__(self, code, email, domain, send_welcome):
         super().__init__(timeout=None)
         self.codeSent = code
         self.email = email
         self.domain = domain
+        self.send_welcome = send_welcome
 
     code = discord.ui.TextInput(
         label="Code",
@@ -474,10 +482,13 @@ class CodeModal(discord.ui.Modal, title="Enter the Code"):
             f"You were given the <@&{str(roleId)}> role", ephemeral=True
         )
 
-        general_channel = interaction.guild.get_channel(general_channel_id)
-        if general_channel:
-            message = random.choice(welcome_messages).format(interaction.user.mention)
-            await general_channel.send(message)
+        if self.send_welcome:
+            general_channel = interaction.guild.get_channel(general_channel_id)
+            if general_channel:
+                message = random.choice(welcome_messages).format(
+                    interaction.user.mention
+                )
+                await general_channel.send(message)
 
     async def on_error(
         self, interaction: discord.Interaction, error: Exception
