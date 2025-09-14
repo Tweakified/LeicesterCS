@@ -261,7 +261,11 @@ class Verify(commands.Cog):
 
                 member = guild.get_member(int(discord_id))
                 if member:
-                    roleIds = [verified_role_id, dmu_verified_role_id, mc_whitelisted_role_id]
+                    roleIds = [
+                        verified_role_id,
+                        dmu_verified_role_id,
+                        mc_whitelisted_role_id,
+                    ]
                     roles_to_remove = [
                         role for role in member.roles if role.id in roleIds
                     ]
