@@ -151,7 +151,7 @@ class Minecraft(commands.Cog):
     @app_commands.command(
         name="whitelist", description="Link your MC account & whitelist it."
     )
-    @app_commands.checks.has_any_role(1414992207282442300)  # Temp Beta tester role
+    @app_commands.checks.has_any_role(verified_role_id, dmu_verified_role_id)
     async def whitelist(self, interaction: discord.Interaction):
         await start_whitelist_process(interaction)
 
