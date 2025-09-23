@@ -312,7 +312,7 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
     )
 
     confirm = discord.ui.TextInput(
-        label="Confirmation",
+        label="Responsibility Confirmation",
         placeholder='Type "Yes" to confirm you understand your responsibility.',
         style=discord.TextStyle.short,
         required=True,
@@ -324,7 +324,7 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
 
         if confirm.strip().lower() != "yes":
             await interaction.response.send_message(
-                "You must type `Yes` to confirm you agree to the server rules.",
+                "You didn't type `Yes` in the `Responsibility Confirmation` field.\nYou must confirm you understand your responsibility to the Minecraft account and agree to the server rules.",
                 ephemeral=True,
             )
             return
