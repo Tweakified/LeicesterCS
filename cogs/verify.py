@@ -336,7 +336,7 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
             return
 
         await interaction.response.send_message(
-            ":thumbsup: An email has been sent to the address you entered. Please press the button when you're ready",
+            ":thumbsup: An email has been sent to the address you entered. **Please check your junk mail**.\nPress the button when you have the code.",
             view=Ready_buttons(code, email, domain, self.send_welcome),
             ephemeral=True,
         )
