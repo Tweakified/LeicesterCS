@@ -173,7 +173,7 @@ class Minecraft(commands.Cog):
         discord_acc: discord.Member = None,
         mc_username: str = None,
     ):
-        if not discord_acc and not discord_acc:
+        if not discord_acc and not mc_username:
             await interaction.response.send_message(
                 "You must provide either a Discord account or a Minecraft username.",
                 ephemeral=True,
