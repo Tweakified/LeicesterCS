@@ -26,7 +26,7 @@ mc_whitelisted_role_id = int(os.getenv("MC_WHITELISTED_ROLE_ID"))
 mc_address = os.getenv("MC_ADDRESS")
 mc_port = os.getenv("MC_PORT")
 
-MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{3,16}$")
+MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{2,16}$")
 mcs_command_url = f"{mcsmanager_host}/api/protected_instance/command"
 
 
@@ -173,7 +173,7 @@ class Minecraft(commands.Cog):
         discord_acc: discord.Member = None,
         mc_username: str = None,
     ):
-        if not discord_acc and not discord_acc:
+        if not discord_acc and not mc_username:
             await interaction.response.send_message(
                 "You must provide either a Discord account or a Minecraft username.",
                 ephemeral=True,
