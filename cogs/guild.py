@@ -172,7 +172,7 @@ class YearRoleAssign_buttons(discord.ui.View):
         custom_id="foundation_year",
     )
     async def found(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "Foundation year")
+        await self.role_update(interaction, "🧱 Foundation Year")
 
     @discord.ui.button(
         label="First year",
@@ -181,7 +181,7 @@ class YearRoleAssign_buttons(discord.ui.View):
         custom_id="First_year",
     )
     async def year1(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "Year 1")
+        await self.role_update(interaction, "🎓 Year 1")
 
     @discord.ui.button(
         label="Second year",
@@ -190,7 +190,7 @@ class YearRoleAssign_buttons(discord.ui.View):
         custom_id="Second_year",
     )
     async def year2(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "Year 2")
+        await self.role_update(interaction, "🎓 Year 2")
 
     @discord.ui.button(
         label="Year in Industry",
@@ -202,7 +202,7 @@ class YearRoleAssign_buttons(discord.ui.View):
     async def sandwich(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.role_update(interaction, "Year in Industry/Abroad")
+        await self.role_update(interaction, "🥪 Year in Industry/Abroad")
 
     @discord.ui.button(
         label="Third year",
@@ -212,7 +212,7 @@ class YearRoleAssign_buttons(discord.ui.View):
         custom_id="Third_year",
     )
     async def year3(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "Year 3")
+        await self.role_update(interaction, "🎓 Year 3")
 
     @discord.ui.button(
         label="Postgraduate",
@@ -222,7 +222,7 @@ class YearRoleAssign_buttons(discord.ui.View):
         custom_id="postgraduate",
     )
     async def postg(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "Postgraduate")
+        await self.role_update(interaction, "📜 Postgraduate")
 
 
 class PronounRoleAssign_buttons(discord.ui.View):
@@ -263,13 +263,13 @@ class PronounRoleAssign_buttons(discord.ui.View):
         label="♂️ He/him", style=discord.ButtonStyle.gray, custom_id="he_him"
     )
     async def hehim(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "He/him")
+        await self.role_update(interaction, "📝 He/him")
 
     @discord.ui.button(
         label="♀️ She/her", style=discord.ButtonStyle.gray, custom_id="she_her"
     )
     async def sheher(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "She/her")
+        await self.role_update(interaction, "📝 She/her")
 
     @discord.ui.button(
         label="⚧️ They/them", style=discord.ButtonStyle.gray, custom_id="they_them"
@@ -277,7 +277,7 @@ class PronounRoleAssign_buttons(discord.ui.View):
     async def theythem(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.role_update(interaction, "They/them")
+        await self.role_update(interaction, "📝 They/them")
 
     @discord.ui.button(
         label="Other",
@@ -286,7 +286,7 @@ class PronounRoleAssign_buttons(discord.ui.View):
         custom_id="other_pronouns",
     )
     async def other(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "Other pronouns")
+        await self.role_update(interaction, "📝 Other Pronouns")
 
 
 class SocialRoleAssign_buttons(discord.ui.View):
@@ -332,13 +332,13 @@ class SocialRoleAssign_buttons(discord.ui.View):
     async def updates(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.role_update(interaction, "Hackathon Ping")
+        await self.role_update(interaction, "🔔 Hackathon Ping")
 
     @discord.ui.button(
         label="Talks", style=discord.ButtonStyle.gray, emoji="📢", custom_id="talks"
     )
     async def news(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "Talks Ping")
+        await self.role_update(interaction, "🔔 Talks Ping")
 
     @discord.ui.button(
         label="Socials", style=discord.ButtonStyle.gray, emoji="🍹", custom_id="socials"
@@ -346,4 +346,4 @@ class SocialRoleAssign_buttons(discord.ui.View):
     async def gamenights(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.role_update(interaction, "Social Ping")
+        await self.role_update(interaction, "🔔 Social Ping")
