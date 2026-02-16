@@ -1,4 +1,4 @@
-discord.py==2.6.2
+discord.py==2.6.4
 python-dotenv==1.1.1
 trello==0.9.7.3
 mailjet-rest==1.5.1
