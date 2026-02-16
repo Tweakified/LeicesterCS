@@ -102,16 +102,19 @@ async def uptime_command(interaction: discord.Interaction):
 async def on_app_command_error(
     interaction: discord.Interaction, error: app_commands.AppCommandError
 ):
+    async def safe_send(msg: str):
+        if interaction.response.is_done():
+            await interaction.followup.send(msg, ephemeral=True)
+        else:
+            await interaction.response.send_message(msg, ephemeral=True)
+
     if isinstance(error, app_commands.MissingAnyRole):
         required_roles = ", ".join(f"`{role}`" for role in error.missing_roles)
-        await interaction.response.send_message(
-            f"You need at least one of the following roles to use this command: {required_roles}",
-            ephemeral=True,
+        await safe_send(
+            f"You need at least one of the following roles to use this command: {required_roles}"
         )
     else:
-        await interaction.response.send_message(
-            "An unexpected error occurred.", ephemeral=True
-        )
+        await safe_send("An unexpected error occurred.")
         raise error
 
 
