@@ -21,9 +21,11 @@ class Guild(commands.Cog):
         self.bot = bot
         print(f"{__name__} cog loaded.")
 
-        bot.add_view(YearRoleAssign_buttons())
-        bot.add_view(SocialRoleAssign_buttons())
         bot.add_view(PronounRoleAssign_buttons())
+        bot.add_view(YearRoleAssign_buttons())
+        bot.add_view(CourseRoleAssign_buttons())
+        bot.add_view(SecondaryCourseRoleAssign_buttons())
+        bot.add_view(DegreeRoleAssign_buttons())
 
     @app_commands.checks.has_any_role(enums.Roles.Administration.value)
     @app_commands.guild_only()
@@ -84,39 +86,39 @@ class Guild(commands.Cog):
             return
 
         embed = discord.Embed(
-            title="Role assign",
-            description="Assign roles to yourself!\nWhich year are you in?",
+            title="<:Ada:1416635217283776573> Year Roles",
+            description="Which year of study are you?",
         )
-
-        embed.add_field(name="🏗️ Foundation year", value="Foundation year")
-        embed.add_field(name="1️⃣ Year 1", value="First year")
-        embed.add_field(name="2️⃣ Year 2", value="Second year")
-        embed.add_field(name="🥪 Year in Industry/Abroad", value="Year in Industry")
-        embed.add_field(name="3️⃣ Year 3", value="Third year")
-        embed.add_field(name="🎓 Postgraduate", value="Postgraduate")
 
         await channel.send(embed=embed, view=YearRoleAssign_buttons())
 
         embed2 = discord.Embed(
-            title="Role assign", description="What are your pronouns?"
+            title="<:Ada:1416635217283776573> Pronoun Roles",
+            description="What pronouns do you prefer?",
         )
-
-        embed2.add_field(name=":male_sign: He/him", value="He/him")
-        embed2.add_field(name=":female_sign: She/her", value="She/her")
-        embed2.add_field(name=":transgender_symbol: They/them", value="They/them")
-        embed2.add_field(name=":heart: Other", value="Other pronouns")
 
         await channel.send(embed=embed2, view=PronounRoleAssign_buttons())
 
         embed3 = discord.Embed(
-            title="Role assign", description="What do you want notifications for?"
+            title="<:Ada:1416635217283776573> Primary Course Roles",
+            description="What is the main part of your course?",
         )
 
-        embed3.add_field(name="🖥️ Hackathons", value="Hackathons")
-        embed3.add_field(name="📢 Talks", value="Talks")
-        embed3.add_field(name="🍹 Socials", value="Socials")
+        await channel.send(embed=embed3, view=CourseRoleAssign_buttons())
 
-        await channel.send(embed=embed3, view=SocialRoleAssign_buttons())
+        embed4 = discord.Embed(
+            title="<:Ada:1416635217283776573> Secondary Course Roles",
+            description="What are the other parts of your course?",
+        )
+
+        await channel.send(embed=embed4, view=SecondaryCourseRoleAssign_buttons())
+
+        embed5 = discord.Embed(
+            title="<:Ada:1416635217283776573> Degree Type Roles",
+            description="What degree level are you studying towards?",
+        )
+
+        await channel.send(embed=embed5, view=DegreeRoleAssign_buttons())
 
         await interaction.response.send_message(
             f"🔲 Role assign message updated in {channel.mention}.", ephemeral=True
@@ -166,16 +168,16 @@ class YearRoleAssign_buttons(discord.ui.View):
         return
 
     @discord.ui.button(
-        label="Foundation year",
+        label="Foundation Year",
         style=discord.ButtonStyle.gray,
         emoji="🏗️",
         custom_id="foundation_year",
     )
     async def found(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "🧱 Foundation Year")
+        await self.role_update(interaction, "🧱 Foundation")
 
     @discord.ui.button(
-        label="First year",
+        label="First Year",
         style=discord.ButtonStyle.gray,
         emoji="1️⃣",
         custom_id="First_year",
@@ -184,8 +186,9 @@ class YearRoleAssign_buttons(discord.ui.View):
         await self.role_update(interaction, "🎓 Year 1")
 
     @discord.ui.button(
-        label="Second year",
+        label="Second Year",
         style=discord.ButtonStyle.gray,
+        row=2,
         emoji="2️⃣",
         custom_id="Second_year",
     )
@@ -193,7 +196,7 @@ class YearRoleAssign_buttons(discord.ui.View):
         await self.role_update(interaction, "🎓 Year 2")
 
     @discord.ui.button(
-        label="Year in Industry",
+        label="Sandwich",
         style=discord.ButtonStyle.gray,
         row=2,
         emoji="🥪",
@@ -202,12 +205,12 @@ class YearRoleAssign_buttons(discord.ui.View):
     async def sandwich(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.role_update(interaction, "🥪 Year in Industry/Abroad")
+        await self.role_update(interaction, "🥪 Sandwich")
 
     @discord.ui.button(
-        label="Third year",
+        label="Third Year",
         style=discord.ButtonStyle.gray,
-        row=2,
+        row=3,
         emoji="3️⃣",
         custom_id="Third_year",
     )
@@ -217,7 +220,7 @@ class YearRoleAssign_buttons(discord.ui.View):
     @discord.ui.button(
         label="Postgraduate",
         style=discord.ButtonStyle.gray,
-        row=2,
+        row=3,
         emoji="🎓",
         custom_id="postgraduate",
     )
@@ -260,19 +263,29 @@ class PronounRoleAssign_buttons(discord.ui.View):
         return
 
     @discord.ui.button(
-        label="♂️ He/him", style=discord.ButtonStyle.gray, custom_id="he_him"
+        label="He/him",
+        style=discord.ButtonStyle.gray,
+        emoji="♂️",
+        custom_id="he_him",
     )
     async def hehim(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.role_update(interaction, "📝 He/him")
 
     @discord.ui.button(
-        label="♀️ She/her", style=discord.ButtonStyle.gray, custom_id="she_her"
+        label="She/her",
+        style=discord.ButtonStyle.gray,
+        emoji="♀️",
+        custom_id="she_her",
     )
     async def sheher(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.role_update(interaction, "📝 She/her")
 
     @discord.ui.button(
-        label="⚧️ They/them", style=discord.ButtonStyle.gray, custom_id="they_them"
+        label="They/them",
+        style=discord.ButtonStyle.gray,
+        row=2,
+        emoji="⚧",
+        custom_id="they_them",
     )
     async def theythem(
         self, interaction: discord.Interaction, button: discord.ui.Button
@@ -282,6 +295,7 @@ class PronounRoleAssign_buttons(discord.ui.View):
     @discord.ui.button(
         label="Other",
         style=discord.ButtonStyle.gray,
+        row=2,
         emoji="❤️",
         custom_id="other_pronouns",
     )
@@ -289,7 +303,7 @@ class PronounRoleAssign_buttons(discord.ui.View):
         await self.role_update(interaction, "📝 Other Pronouns")
 
 
-class SocialRoleAssign_buttons(discord.ui.View):
+class CourseRoleAssign_buttons(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
         self.cd = commands.CooldownMapping.from_cooldown(6, 10, key)
@@ -324,26 +338,235 @@ class SocialRoleAssign_buttons(discord.ui.View):
         return
 
     @discord.ui.button(
-        label="Hackathons",
+        label="Computer Science",
         style=discord.ButtonStyle.gray,
         emoji="🖥️",
-        custom_id="hackathons",
+        custom_id="computer_science",
     )
-    async def updates(
+    async def computerscience(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.role_update(interaction, "🔔 Hackathon Ping")
+        await self.role_update(interaction, "🔷 Computer Science")
 
     @discord.ui.button(
-        label="Talks", style=discord.ButtonStyle.gray, emoji="📢", custom_id="talks"
+        label="Creative Computing",
+        style=discord.ButtonStyle.gray,
+        emoji="🎨",
+        custom_id="creative_computing",
     )
-    async def news(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.role_update(interaction, "🔔 Talks Ping")
-
-    @discord.ui.button(
-        label="Socials", style=discord.ButtonStyle.gray, emoji="🍹", custom_id="socials"
-    )
-    async def gamenights(
+    async def creativecomputing(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await self.role_update(interaction, "🔔 Social Ping")
+        await self.role_update(interaction, "🔷 Creative Computing")
+
+    @discord.ui.button(
+        label="Software Engineering",
+        style=discord.ButtonStyle.gray,
+        row=2,
+        emoji="🔧",
+        custom_id="software_engineering",
+    )
+    async def softwareengineering(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔷 Software Engineering")
+
+    @discord.ui.button(
+        label="AI and Data Science",
+        style=discord.ButtonStyle.gray,
+        row=2,
+        emoji="🥼",
+        custom_id="ai_and_data_science",
+    )
+    async def aianddatascience(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔷 AI and Data Science")
+
+    @discord.ui.button(
+        label="Mathematics",
+        style=discord.ButtonStyle.gray,
+        row=3,
+        emoji="📊",
+        custom_id="mathematics",
+    )
+    async def mathematics(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔷 Mathematics")
+
+
+class SecondaryCourseRoleAssign_buttons(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.cd = commands.CooldownMapping.from_cooldown(6, 10, key)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        retry_after = self.cd.update_rate_limit(interaction)
+
+        if retry_after:
+            await interaction.response.send_message(
+                f":stopwatch: Slow down! Try again in **{int(retry_after)} seconds**.",
+                ephemeral=True,
+            )
+            return False
+        else:
+            return True
+
+    async def role_update(self, interaction: discord.Interaction, role_name):
+        role = discord.utils.get(interaction.guild.roles, name=role_name)
+
+        if role not in interaction.user.roles:
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(
+                f":black_square_button: {role.mention} role **added**.", ephemeral=True
+            )
+        else:
+            await interaction.user.remove_roles(role)
+            await interaction.response.send_message(
+                f":black_square_button: {role.mention} role **removed**.",
+                ephemeral=True,
+            )
+
+        return
+
+    @discord.ui.button(
+        label="with AI",
+        style=discord.ButtonStyle.gray,
+        emoji="👾",
+        custom_id="with_ai",
+    )
+    async def withai(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.role_update(interaction, "🔹 with AI")
+
+    @discord.ui.button(
+        label="with Cyber Security",
+        style=discord.ButtonStyle.gray,
+        emoji="👩‍💻",
+        custom_id="with_cyber_sec",
+    )
+    async def withcybersec(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔹 with Cyber Security")
+
+    @discord.ui.button(
+        label="and Actuarial Science",
+        style=discord.ButtonStyle.gray,
+        row=2,
+        emoji="🧪",
+        custom_id="with_actuarial",
+    )
+    async def withactuarial(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔹 and Actuarial Science")
+
+    @discord.ui.button(
+        label="with Year in Industry",
+        style=discord.ButtonStyle.gray,
+        row=2,
+        emoji="💼",
+        custom_id="with_placement",
+    )
+    async def withplacement(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔸 with Year in Industry")
+
+    @discord.ui.button(
+        label="with Year Abroad",
+        style=discord.ButtonStyle.gray,
+        row=3,
+        emoji="🌍",
+        custom_id="with_abroad",
+    )
+    async def withabroad(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔸 with Year Abroad")
+
+    @discord.ui.button(
+        label="with Foundation Year",
+        style=discord.ButtonStyle.gray,
+        row=3,
+        emoji="🏗",
+        custom_id="with_foundation",
+    )
+    async def withfoundation(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await self.role_update(interaction, "🔸 with Foundation Year")
+
+
+class DegreeRoleAssign_buttons(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.cd = commands.CooldownMapping.from_cooldown(6, 10, key)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        retry_after = self.cd.update_rate_limit(interaction)
+
+        if retry_after:
+            await interaction.response.send_message(
+                f":stopwatch: Slow down! Try again in **{int(retry_after)} seconds**.",
+                ephemeral=True,
+            )
+            return False
+        else:
+            return True
+
+    async def role_update(self, interaction: discord.Interaction, role_name):
+        role = discord.utils.get(interaction.guild.roles, name=role_name)
+
+        if role not in interaction.user.roles:
+            await interaction.user.add_roles(role)
+            await interaction.response.send_message(
+                f":black_square_button: {role.mention} role **added**.", ephemeral=True
+            )
+        else:
+            await interaction.user.remove_roles(role)
+            await interaction.response.send_message(
+                f":black_square_button: {role.mention} role **removed**.",
+                ephemeral=True,
+            )
+
+        return
+
+    @discord.ui.button(
+        label="BSc",
+        style=discord.ButtonStyle.gray,
+        emoji="👨‍🔬",
+        custom_id="bsc",
+    )
+    async def bsc(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.role_update(interaction, "🔶 BSc")
+
+    @discord.ui.button(
+        label="MComp",
+        style=discord.ButtonStyle.gray,
+        emoji="💻",
+        custom_id="mcomp",
+    )
+    async def mcomp(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.role_update(interaction, "🔶 MComp")
+
+    @discord.ui.button(
+        label="BEng",
+        style=discord.ButtonStyle.gray,
+        row=2,
+        emoji="⚡",
+        custom_id="beng",
+    )
+    async def beng(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.role_update(interaction, "🔶 BEng")
+
+    @discord.ui.button(
+        label="MMath",
+        style=discord.ButtonStyle.gray,
+        row=2,
+        emoji="📈",
+        custom_id="mmath",
+    )
+    async def mmath(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.role_update(interaction, "🔶 MMath")
