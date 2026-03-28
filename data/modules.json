@@ -9,7 +9,7 @@
     "emoji": "🛠️"
   },
   "CO1101": {
-    "description": "Computing Fundamentals (WIP)",
+    "description": "Computing Fundamentals",
     "image": "https://semiwiki.com/wp-content/uploads/2025/07/ChatGPT-Image-Jul-13-2025-11_03_34-AM.png",
     "emoji": "\uD83D\uDC0D",
     "fields": [
@@ -93,7 +93,52 @@
     "authors": ["kaeini"]
   },
   "CO1103": {
-    "description": "Maths Fundamentals (WIP)"
+    "description": "Maths Fundamentals",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/5/5f/Tree_%28computer_science%29.svg",
+    "emoji": "\uD83D\uDC0D",
+    "fields": [
+      {
+        "name": "Week 1",
+        "value": "[Playlist](https://www.youtube.com/playlist?list=PLOfyk5hPzCLmdLGuJ5WxXWjxN6ur6gxpL) NOTE: For the second video, you only need Direct Proof, Proof by Contraposition, and Proof by Contradiction."
+      },
+      {
+        "name": "Week 2",
+        "value": "[Playlist](https://youtube.com/playlist?list=PLOfyk5hPzCLlMzYN6Pib94WlF0_vixKKl&si=0U6oKQndsILq4e0q)"
+      },
+      {
+        "name": "Week 3",
+        "value": "[Playlist](https://www.youtube.com/playlist?list=PLOfyk5hPzCLl4BLOwgIPTdp5yOdmascl2)"
+      },
+      {
+        "name": "Week 4",
+        "value": "[Playlist](https://youtube.com/playlist?list=PLOfyk5hPzCLmaGaNXJE5f3hHo5cU0jdTL&si=Q6llToMA0owreLDJ) NOTE: Single value relations means no elements from A are attached to B, total relations means at least one element from A is attached to B."
+      },
+      {
+        "name": "Week 5",
+        "value": "[Playlist](https://www.youtube.com/playlist?list=PLOfyk5hPzCLnEFtdGQzEFS2yazelTJ9Ev)"
+      },
+      {
+        "name": "Week 6",
+        "value": "[Playlist](https://youtube.com/playlist?list=PLOfyk5hPzCLkPQ1WBkPQMAEzOk1t_gIFB&si=Wv6sKKiJKlUs9x25)"
+      },
+      {
+        "name": "Week 7",
+        "value": "[Playlist](https://youtube.com/playlist?list=PLOfyk5hPzCLnVbfQp0gVdrc7Luj0oUXIb&si=FdIYEdQtM0Pl3UKw)"
+      },
+      {
+        "name": "Week 8",
+        "value": "[Playlist](https://youtube.com/playlist?list=PLOfyk5hPzCLlkvek9cjTIoyKrT1zhg_yJ&si=Ph7KwJT6-38dhx4e) NOTE: For the first video, you only need to go up to combinations."
+      },
+      {
+        "name": "Week 9",
+        "value": "[Playlist](https://youtube.com/playlist?list=PLOfyk5hPzCLl8den8k-EW9Oh2IYSg_I-9&si=mz9cDpvwQlZBJAsB)"
+      },
+      {
+        "name": "Week 10",
+        "value": "[Video](https://youtu.be/bse50K-kd5s) \n [Website](https://math.libretexts.org/Courses/Saint_Mary%27s_College_Notre_Dame_IN/SMC%3A_MATH_339_-_Discrete_Mathematics_(Rohatgi)/Text/4%3A_Algorithms/4.1%3A_Big-O_Notation)"
+      }
+    ],
+    "authors": ["kaeini"]
   },
   "CO1104": {
     "description": "Computer Architecture (WIP)"
