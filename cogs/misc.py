@@ -27,7 +27,7 @@ class Misc(commands.Cog):
         )
         embed.add_field(
             name="Committee Contacts",
-            value="Kieran `President` <@514100882661572619>\nPushkar `Vice President` <@649605009025007656>\nIsmail `Treasurer` <@673105704000684043>\nIulia `Secretary` <@387277240418697216>\nSwayam `Social Sec` <@671774120131821648>\nJacinta `Publicity` <@993198933390151770>\nNeha `Publicity` <@1337718703290060812>\nShreya `Events Co-ordinator` <@1337738846095282199>",
+            value="Jenith `President` <@1288873520897720331>\nEshaan `Treasurer` <@1428384426982904003>\nRuby `Secretary` <@528721768958132224>\nShreya `Events and Socials` <@944262830323036161>\nJashan `Publicity` <@1008573039207796837>\nDillon `Publicity` <@1310621124991647869>",
             inline=False,
         )
         embed.add_field(
