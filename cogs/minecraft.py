@@ -133,7 +133,7 @@ class Minecraft(commands.Cog):
             status_text = "🟢 Online"
             online = True
 
-        except Exception as e:
+        except (OSError, TimeoutError, ValueError) as e:
             print(f"Minecraft status check failed: {e}")
 
             version = "Unknown"

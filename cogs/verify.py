@@ -479,7 +479,11 @@ class CodeModal(discord.ui.Modal, title="Enter the Code"):
         expiry_time = int(
             (datetime.now(timezone.utc) + timedelta(days=365)).timestamp()
         )
-        data[str(interaction.user.id)] = {"email": self.email, "expires": expiry_time, "expiry_warning_sent": False}
+        data[str(interaction.user.id)] = {
+            "email": self.email,
+            "expires": expiry_time,
+            "expiry_warning_sent": False,
+        }
 
         await save_json(enums.FileLocations.Verify.value, data, indent=4)
 
