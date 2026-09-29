@@ -1,16 +1,16 @@
-import aiohttp
 import os
 import re
+import traceback
+
+import aiohttp
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
 from dotenv import load_dotenv
 from mcstatus import JavaServer
+
 from modules import enums
-from modules.utils import ensure_json_exists
-import traceback
-import json
-from typing import List
+from modules.utils import ensure_json_exists, load_json, save_json
 
 load_dotenv()
 
@@ -30,7 +30,7 @@ MC_USERNAME_PATTERN = re.compile(r"^[a-zA-Z0-9_]{2,16}$")
 mcs_command_url = f"{mcsmanager_host}/api/protected_instance/command"
 
 
-async def unwhitelist_pipeline(minecraft_usernames: List[str]):
+async def unwhitelist_pipeline(minecraft_usernames: list[str]):
     params = {
         "apikey": mcsmanager_token,
         "uuid": mcsmanager_instance_id,
@@ -38,16 +38,17 @@ async def unwhitelist_pipeline(minecraft_usernames: List[str]):
         "command": "; ".join([f"whitelist remove {u}" for u in minecraft_usernames]),
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(mcs_command_url, params=params) as resp:
-            return resp.status == 200
+    async with (
+        aiohttp.ClientSession() as session,
+        session.post(mcs_command_url, params=params) as resp,
+    ):
+        return resp.status == 200
 
 
 async def unwhitelist_account(
     interaction: discord.Interaction, discord_id: str, respond: bool = True
 ):
-    with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    data = await load_json(enums.FileLocations.MCData.value)
 
     removed_usernames = []
 
@@ -68,8 +69,7 @@ async def unwhitelist_account(
         if role in member.roles:
             await member.remove_roles(role)
 
-    with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
+    await save_json(enums.FileLocations.MCData.value, data, indent=4)
 
     success = await unwhitelist_pipeline(removed_usernames)
     if respond:
@@ -95,8 +95,7 @@ async def start_whitelist_process(interaction: discord.Interaction):
         )
         return
 
-    with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
-        verify_data = json.load(f)
+    verify_data = await load_json(enums.FileLocations.Verify.value)
 
     if str(interaction.user.id) not in verify_data:
         await interaction.response.send_message(
@@ -128,7 +127,7 @@ class Minecraft(commands.Cog):
             players_online = status.players.online
             max_players = status.players.max
             status_text = "🟢 Online"
-        except Exception:
+        except (OSError, TimeoutError, ValueError):
             version = "Unknown"
             online = False
             players_online = 0
@@ -171,7 +170,7 @@ class Minecraft(commands.Cog):
         self,
         interaction: discord.Interaction,
         discord_acc: discord.Member = None,
-        mc_username: str = None,
+        mc_username: str | None = None,
     ):
         if not discord_acc and not mc_username:
             await interaction.response.send_message(
@@ -192,8 +191,7 @@ class Minecraft(commands.Cog):
             return
 
         if mc_username:
-            with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            data = await load_json(enums.FileLocations.MCData.value)
 
             username_lower = mc_username.strip().lower()
             target_discord_id = None
@@ -336,14 +334,13 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
             )
             return
 
-        with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        data = await load_json(enums.FileLocations.MCData.value)
 
         discord_id = str(interaction.user.id)
         if discord_id not in data:
             data[discord_id] = []
 
-        for temp_discordId, usernames in data.items():
+        for usernames in data.values():
             if username.lower() in [u.lower() for u in usernames]:
                 await interaction.response.send_message(
                     "This Minecraft account is already whitelisted.",
@@ -353,8 +350,7 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
 
         data[discord_id].append(username)
 
-        with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
-            json.dump(data, f)
+        await save_json(enums.FileLocations.MCData.value, data)
 
         role = interaction.guild.get_role(mc_whitelisted_role_id)
         await interaction.user.add_roles(role)
@@ -366,17 +362,19 @@ class WhitelistModal(discord.ui.Modal, title="Minecraft Whitelist"):
             "command": f"whitelist add {username}",
         }
 
-        async with aiohttp.ClientSession() as session:
-            async with session.post(mcs_command_url, params=params) as resp:
-                if resp.status == 200:
-                    await interaction.response.send_message(
-                        f"Successfully whitelisted `{username}`!", ephemeral=True
-                    )
-                else:
-                    await interaction.response.send_message(
-                        "Failed to add you to the whitelist. Please try again later.\nYou can DM a member of the committee to manually whitelist you.",
-                        ephemeral=True,
-                    )
+        async with (
+            aiohttp.ClientSession() as session,
+            session.post(mcs_command_url, params=params) as resp,
+        ):
+            if resp.status == 200:
+                await interaction.response.send_message(
+                    f"Successfully whitelisted `{username}`!", ephemeral=True
+                )
+            else:
+                await interaction.response.send_message(
+                    "Failed to add you to the whitelist. Please try again later.\nYou can DM a member of the committee to manually whitelist you.",
+                    ephemeral=True,
+                )
 
     async def on_error(
         self, interaction: discord.Interaction, error: Exception

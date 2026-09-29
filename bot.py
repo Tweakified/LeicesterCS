@@ -1,11 +1,11 @@
+import os
+from datetime import datetime, timezone
+
 import discord
-from discord.ext import commands
 from discord import app_commands
 from discord.app_commands import Choice
+from discord.ext import commands
 from dotenv import load_dotenv
-import os
-from datetime import datetime
-from typing import Optional
 
 # CONFIGURATION
 extensions = [
@@ -56,7 +56,7 @@ async def sync(ctx: commands.Context, globalSync=None):
             await ctx.reply(
                 ":globe_with_meridians: Synced commands to the current guild.\n(Tip: use `global` parameter to sync globally)"
             )
-        except Exception:
+        except discord.HTTPException:
             await ctx.reply(":warning: There was an error!")
 
 
@@ -75,7 +75,7 @@ async def sync_error(ctx, error):
 @app_commands.default_permissions()
 @app_commands.checks.has_permissions(administrator=True)
 @app_commands.checks.cooldown(1, 10)
-async def reload(interaction: discord.Interaction, cog: Optional[Choice[str]]):
+async def reload(interaction: discord.Interaction, cog: Choice[str] | None):
     if cog is None:
         for ext in extensions:
             await bot.reload_extension(ext)
@@ -88,7 +88,7 @@ async def reload(interaction: discord.Interaction, cog: Optional[Choice[str]]):
 
 
 # Uptime command
-uptime = datetime.now().timestamp()
+uptime = datetime.now(timezone.utc).timestamp()
 
 
 @bot.tree.command(name="uptime", description="See bot's uptime")

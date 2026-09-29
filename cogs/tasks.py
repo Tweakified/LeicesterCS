@@ -1,13 +1,13 @@
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands
-from typing import Optional
+import time
 from itertools import cycle
+
+import discord
+from discord import app_commands
+from discord.ext import commands, tasks
 
 # Custom modules
 from modules import enums
-import time
-import json
+from modules.utils import save_json
 
 
 class Tasks(commands.Cog):
@@ -30,7 +30,7 @@ class Tasks(commands.Cog):
         name="status",
         description="Update the bot's status message. To remove the status, do not provide any parameter.",
     )
-    async def status(self, interaction: discord.Interaction, text: Optional[str]):
+    async def status(self, interaction: discord.Interaction, text: str | None):
         if text is None:
             if self.activityUpdate.is_running() is False:
                 self.activityUpdate.start()
@@ -55,8 +55,9 @@ class Tasks(commands.Cog):
     # Discord status task
     @tasks.loop(seconds=30)
     async def activityUpdate(self):
-        with open(enums.FileLocations.UpTime.value, "w") as f:
-            json.dump({"Time": int(time.time())}, f, indent=2)
+        await save_json(
+            enums.FileLocations.UpTime.value, {"Time": int(time.time())}, indent=2
+        )
 
         await self.bot.change_presence(activity=discord.Game(next(self.activity)))
 

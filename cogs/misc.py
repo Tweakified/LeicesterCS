@@ -1,7 +1,8 @@
+from datetime import datetime, timezone
+
 import discord
-from discord.ext import commands
 from discord import app_commands
-from datetime import datetime
+from discord.ext import commands
 
 # Custom modules
 from modules import enums
@@ -100,11 +101,11 @@ class Misc(commands.Cog):
     async def utc(self, interaction: discord.Interaction):
         embed = discord.Embed(title="Time")
 
-        utc = int(datetime.now().timestamp())
+        utc = int(datetime.now(timezone.utc).timestamp())
 
         embed.add_field(
             name="UTC - Coordinated Universal Time",
-            value=datetime.utcnow().strftime("%d. %m. %Y %H:%M:%S"),
+            value=datetime.now(timezone.utc).strftime("%d. %m. %Y %H:%M:%S"),
             inline=False,
         )
         embed.add_field(name="Your local time", value=f"<t:{utc}:d> <t:{utc}:T>")

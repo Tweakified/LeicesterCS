@@ -1,6 +1,7 @@
-from enum import Enum
-from dotenv import load_dotenv
 import os
+from enum import Enum
+
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -18,7 +19,7 @@ class Roles(Enum):
 
     Administration = "🌳 Root"
     Management = "💾 Committee"
-    Staff = "💾 Committee"
+    Staff = "🛠️ Staff"
 
 
 class _guildChannels(Enum):

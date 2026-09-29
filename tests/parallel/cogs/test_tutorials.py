@@ -1,11 +1,10 @@
-import pytest
-
-from unittest.mock import AsyncMock, patch, PropertyMock
-import discord
-
-import sys
 import importlib
+import sys
 from pathlib import Path
+from unittest.mock import AsyncMock, PropertyMock, patch
+
+import discord
+import pytest
 
 OLD_PATH = Path("old")
 NEW_PATH = Path("new")
@@ -31,7 +30,7 @@ async def retrieve_module_information(code: str, view, interaction) -> dict:
     interaction.followup.send.assert_called_once()
     args, kwargs = interaction.followup.send.call_args
 
-    option = [option for option in view.on_select.options if option.label == code][0]
+    option = next(option for option in view.on_select.options if option.label == code)
 
     return {
         "option": {"label": option.label, "description": option.description},

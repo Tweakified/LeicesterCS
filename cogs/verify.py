@@ -1,21 +1,21 @@
-import traceback
-import discord
-from discord.ext import commands, tasks
-from discord import app_commands, ui
+import os
 import random
 import re
-from datetime import datetime, timedelta
 import time
-import json
-import os
+import traceback
+from datetime import datetime, timedelta, timezone
+
+import discord
+from discord import app_commands, ui
+from discord.ext import commands, tasks
+from dotenv import load_dotenv
+from mailjet_rest import Client
+
+from cogs.minecraft import unwhitelist_account, unwhitelist_pipeline
 
 # Custom modules
 from modules import enums
-from modules.utils import ensure_json_exists
-
-from mailjet_rest import Client
-from dotenv import load_dotenv
-from cogs.minecraft import unwhitelist_account, unwhitelist_pipeline
+from modules.utils import ensure_json_exists, load_json, save_json
 
 load_dotenv()
 
@@ -48,7 +48,7 @@ welcome_messages = [
 
 
 def sendEmail(email, code):
-    formatCode = "{:05d}".format(code)
+    formatCode = f"{code:05d}"
 
     data = {
         "Messages": [
@@ -74,8 +74,7 @@ def sendEmail(email, code):
 
 
 async def verificationRequest(interaction):
-    with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
-        verify_data = json.load(f)
+    verify_data = await load_json(enums.FileLocations.Verify.value)
 
     discord_id = str(interaction.user.id)
 
@@ -95,14 +94,12 @@ async def verificationRequest(interaction):
 
 
 async def unverify_account(interaction: discord.Interaction, discord_id: str):
-    with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    data = await load_json(enums.FileLocations.Verify.value)
 
     if discord_id in data:
         data.pop(discord_id, None)
 
-        with open(enums.FileLocations.Verify.value, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
+        await save_json(enums.FileLocations.Verify.value, data, indent=4)
 
     await unwhitelist_account(interaction, discord_id, False)
 
@@ -208,8 +205,7 @@ class Verify(commands.Cog):
     @app_commands.checks.has_any_role(enums.Roles.Management.value)
     @app_commands.command(name="ban", description="Ban a student email from verifying.")
     async def ban(self, interaction: discord.Interaction, email: str):
-        with open(enums.FileLocations.Banned.value, "r", encoding="utf-8") as f:
-            banned_data = json.load(f)
+        banned_data = await load_json(enums.FileLocations.Banned.value)
 
         email = email.strip().lower()
 
@@ -222,11 +218,9 @@ class Verify(commands.Cog):
 
         banned_data.append(email)
 
-        with open(enums.FileLocations.Banned.value, "w", encoding="utf-8") as f:
-            json.dump(banned_data, f, indent=4)
+        await save_json(enums.FileLocations.Banned.value, banned_data, indent=4)
 
-        with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        data = await load_json(enums.FileLocations.Verify.value)
 
         discord_id = None
         for did, entry in data.items():
@@ -247,10 +241,8 @@ class Verify(commands.Cog):
         current_time = int(time.time())
         removed = []
 
-        with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
-            verify_data = json.load(f)
-        with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
-            mc_data = json.load(f)
+        verify_data = await load_json(enums.FileLocations.Verify.value)
+        mc_data = await load_json(enums.FileLocations.MCData.value)
 
         guild = self.bot.get_guild(enums.Guild.LeicesterCS.value)
 
@@ -278,10 +270,8 @@ class Verify(commands.Cog):
                 if removed_usernames:
                     await unwhitelist_pipeline(removed_usernames)
 
-        with open(enums.FileLocations.Verify.value, "w", encoding="utf-8") as f:
-            json.dump(verify_data, f, indent=4)
-        with open(enums.FileLocations.MCData.value, "w", encoding="utf-8") as f:
-            json.dump(mc_data, f, indent=4)
+        await save_json(enums.FileLocations.Verify.value, verify_data, indent=4)
+        await save_json(enums.FileLocations.MCData.value, mc_data, indent=4)
 
         if removed:
             print(
@@ -315,8 +305,7 @@ class EmailModal(discord.ui.Modal, title="Enter Uni Email"):
             )
             return
 
-        with open(enums.FileLocations.Banned.value, "r", encoding="utf-8") as f:
-            banned_data = json.load(f)
+        banned_data = await load_json(enums.FileLocations.Banned.value)
 
         if email in [b.lower() for b in banned_data]:
             await interaction.response.send_message(
@@ -463,14 +452,14 @@ class CodeModal(discord.ui.Modal, title="Enter the Code"):
             )
             return
 
-        with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        data = await load_json(enums.FileLocations.Verify.value)
 
-        expiry_time = int((datetime.utcnow() + timedelta(days=365)).timestamp())
+        expiry_time = int(
+            (datetime.now(timezone.utc) + timedelta(days=365)).timestamp()
+        )
         data[str(interaction.user.id)] = {"email": self.email, "expires": expiry_time}
 
-        with open(enums.FileLocations.Verify.value, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
+        await save_json(enums.FileLocations.Verify.value, data, indent=4)
 
         roleId = verified_role_id
         if self.domain == "dmu.ac.uk":
@@ -479,7 +468,7 @@ class CodeModal(discord.ui.Modal, title="Enter the Code"):
 
         await interaction.user.add_roles(role)
         await interaction.response.send_message(
-            f"You were given the <@&{str(roleId)}> role", ephemeral=True
+            f"You were given the <@&{roleId!s}> role", ephemeral=True
         )
 
         if self.send_welcome:
@@ -524,10 +513,8 @@ class LookupModal(discord.ui.Modal, title="Lookup User Data"):
         self.interaction = interaction
 
     async def on_submit(self, interaction: discord.Interaction):
-        with open(enums.FileLocations.Verify.value, "r", encoding="utf-8") as f:
-            verify_data = json.load(f)
-        with open(enums.FileLocations.MCData.value, "r", encoding="utf-8") as f:
-            mc_data = json.load(f)
+        verify_data = await load_json(enums.FileLocations.Verify.value)
+        mc_data = await load_json(enums.FileLocations.MCData.value)
 
         discord_id = None
         if self.discord_account.value:

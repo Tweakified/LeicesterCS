@@ -1,7 +1,8 @@
-import discord
-from discord.ext import commands
-from discord import app_commands
 import os
+
+import discord
+from discord import app_commands
+from discord.ext import commands
 from trello import TrelloApi
 
 # Custom modules
@@ -165,8 +166,6 @@ class YearRoleAssign_buttons(discord.ui.View):
                 ephemeral=True,
             )
 
-        return
-
     @discord.ui.button(
         label="Foundation Year",
         style=discord.ButtonStyle.gray,
@@ -260,8 +259,6 @@ class PronounRoleAssign_buttons(discord.ui.View):
                 ephemeral=True,
             )
 
-        return
-
     @discord.ui.button(
         label="He/him",
         style=discord.ButtonStyle.gray,
@@ -334,8 +331,6 @@ class CourseRoleAssign_buttons(discord.ui.View):
                 f":black_square_button: {role.mention} role **removed**.",
                 ephemeral=True,
             )
-
-        return
 
     @discord.ui.button(
         label="Computer Science",
@@ -427,8 +422,6 @@ class SecondaryCourseRoleAssign_buttons(discord.ui.View):
                 f":black_square_button: {role.mention} role **removed**.",
                 ephemeral=True,
             )
-
-        return
 
     @discord.ui.button(
         label="with AI",
@@ -530,8 +523,6 @@ class DegreeRoleAssign_buttons(discord.ui.View):
                 f":black_square_button: {role.mention} role **removed**.",
                 ephemeral=True,
             )
-
-        return
 
     @discord.ui.button(
         label="BSc",
