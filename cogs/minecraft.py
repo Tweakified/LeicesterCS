@@ -1,4 +1,5 @@
 import aiohttp
+import asyncio
 import os
 import re
 import discord
@@ -120,33 +121,43 @@ class Minecraft(commands.Cog):
         description="Check the status of the LeicesterMC Minecraft server",
     )
     async def mcstatus(self, interaction: discord.Interaction):
+        await interaction.response.defer()
+
         try:
             server = JavaServer.lookup(f"{mc_address}:{mc_port}")
-            status = server.status()
+
+            status = await asyncio.to_thread(server.status)
+
             version = status.version.name
-            online = True
             players_online = status.players.online
             max_players = status.players.max
             status_text = "🟢 Online"
-        except Exception:
+            online = True
+
+        except Exception as e:
+            print(f"Minecraft status check failed: {e}")
+
             version = "Unknown"
-            online = False
             players_online = 0
             max_players = 0
             status_text = "🔴 Offline"
+            online = False
 
         embed = discord.Embed(
             title="🎮 LeicesterMC Server Status",
             color=discord.Color.green() if online else discord.Color.red(),
         )
+
         embed.add_field(name="Address", value=mc_address, inline=False)
         embed.add_field(name="Version", value=version, inline=True)
         embed.add_field(name="Status", value=status_text, inline=True)
         embed.add_field(
-            name="Players", value=f"{players_online}/{max_players}", inline=True
+            name="Players",
+            value=f"{players_online}/{max_players}",
+            inline=True,
         )
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
 
     @app_commands.command(
         name="whitelist", description="Link your MC account & whitelist it."
