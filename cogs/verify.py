@@ -247,6 +247,28 @@ class Verify(commands.Cog):
         guild = self.bot.get_guild(enums.Guild.LeicesterCS.value)
 
         for discord_id, entry in list(verify_data.items()):
+            expires = entry.get("expires")
+            if expires and not entry.get("expiry_warning_sent", False):
+                warning_time = expires - (7 * 24 * 60 * 60)
+
+                if current_time >= warning_time:
+                    member = guild.get_member(int(discord_id))
+
+                    if member:
+                        try:
+                            await member.send(
+                                "**Your LeicesterCS verification is expiring soon**\n\n"
+                                "Your university verification will expire in about **7 days**. "
+                                "After it expires, you'll lose your verified role and access "
+                                "to the server.\n\n"
+                                "Once your verification has expired, please verify again in the LeicesterCS server."
+                            )
+                            entry["expiry_warning_sent"] = True
+                        except discord.Forbidden:
+                            print(
+                                f"[Cleanup] Could not DM user {discord_id} about verification expiry."
+                            )
+
             if entry.get("expires") and current_time > entry["expires"]:
                 removed.append(discord_id)
                 verify_data.pop(discord_id, None)
@@ -457,7 +479,7 @@ class CodeModal(discord.ui.Modal, title="Enter the Code"):
         expiry_time = int(
             (datetime.now(timezone.utc) + timedelta(days=365)).timestamp()
         )
-        data[str(interaction.user.id)] = {"email": self.email, "expires": expiry_time}
+        data[str(interaction.user.id)] = {"email": self.email, "expires": expiry_time, "expiry_warning_sent": False}
 
         await save_json(enums.FileLocations.Verify.value, data, indent=4)
 
